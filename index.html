@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi portal · Bitácora</title>
+<meta name="theme-color" content="#1E3A75">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="app"></div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/supabase-config.js"></script>
+<script>
+/* =========================================================
+   Portal de autoservicio — /usuarios
+   =========================================================
+   Importante: esto NO es un sistema de login real. Cualquiera con
+   el enlace puede elegir cualquier nombre de la lista y ver esos
+   datos — no hay contraseña ni verificación de identidad. Sirve
+   para que cada colaborador consulte su información rápido, pero
+   si vas a manejar datos sensibles de personas reales, lo correcto
+   es activar Supabase Auth (login con correo/contraseña o enlace
+   mágico) y restringir las políticas de RLS en schema.sql para que
+   cada quien solo pueda ver sus propios datos.
+*/
+let empleados = [];
+let yo = null;
+let tab = 'perfil';
+
+function $(s,c=document){return c.querySelector(s);}
+function iniciales(n){return n.split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase();}
+function fmtCOP(n){return (n||0).toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});}
+function fmtDate(iso){ if(!iso) return '—'; return new Date(iso+'T00:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  $('#toastRoot').appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},2600);
+}
+function openModal(title, body, foot){
+  $('#modalRoot').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal"><div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="closeModal()">✕</button></div>
+    <div class="modal-body">${body}</div>${foot? `<div class="modal-foot">${foot}</div>`:''}</div></div>`;
+}
+function closeModal(){ $('#modalRoot').innerHTML=''; }
+
+async function cargarEmpleados(){
+  const {data, error} = await sb.from('empleados').select('*').eq('estado','Activo').order('nombre');
+  if(error){ toast('No se pudo conectar a Supabase: '+error.message); empleados=[]; return; }
+  empleados = data;
+}
+
+function renderLogin(){
+  $('#app').innerHTML = `
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="mark">B</div>
+      <h1>Mi portal</h1>
+      <div class="subt">Bitácora · autoservicio para colaboradores</div>
+      <div class="field"><label>Selecciona tu nombre</label>
+        <select id="login_emp">${empleados.length? empleados.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('') : '<option value="">No hay colaboradores registrados</option>'}</select>
+      </div>
+      <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="entrar()" ${!empleados.length?'disabled':''}>Entrar</button>
+      <div class="auth-note">Este portal no pide contraseña: cualquiera con el enlace puede entrar como cualquier colaborador de la lista. No lo uses todavía con información sensible real sin activar un login de verdad.</div>
+    </div>
+  </div>`;
+}
+function entrar(){
+  const id = $('#login_emp').value; if(!id) return;
+  yo = empleados.find(e=>e.id===id);
+  tab = 'perfil';
+  renderPortal();
+}
+function salir(){ yo=null; renderLogin(); }
+
+async function renderPortal(){
+  $('#app').innerHTML = `
+    <div class="portal-topbar">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="hex hex-sm">${iniciales(yo.nombre)}</div>
+        <div><div style="font-weight:700; font-size:13.5px;">${yo.nombre}</div><div style="font-size:11.5px; color:var(--muted);">${yo.cargo||''}</div></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="salir()">Salir</button>
+    </div>
+    <div class="portal-shell">
+      <div class="tabs">
+        <button class="${tab==='perfil'?'active':''}" onclick="cambiarTab('perfil')">Mi perfil</button>
+        <button class="${tab==='asistencia'?'active':''}" onclick="cambiarTab('asistencia')">Mi asistencia</button>
+        <button class="${tab==='solicitar'?'active':''}" onclick="cambiarTab('solicitar')">Solicitar permiso</button>
+        <button class="${tab==='misSolicitudes'?'active':''}" onclick="cambiarTab('misSolicitudes')">Mis solicitudes</button>
+      </div>
+      <div id="tabBody"><div class="empty"><div class="big">Cargando…</div></div></div>
+    </div>`;
+  await renderTab();
+}
+async function cambiarTab(t){ tab=t; await renderTab(); }
+
+async function renderTab(){
+  const body = $('#tabBody');
+  if(tab==='perfil'){
+    body.innerHTML = `
+    <div class="card card-pad" style="max-width:520px;">
+      <div class="table-wrap"><table><tbody>
+        <tr><td style="font-weight:600; width:40%;">Cédula</td><td>${yo.cedula||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Cargo</td><td>${yo.cargo||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Área</td><td>${yo.area||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Tipo de contrato</td><td>${yo.contrato||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Fecha de ingreso</td><td>${fmtDate(yo.ingreso)}</td></tr>
+        <tr><td style="font-weight:600;">Salario base</td><td>${fmtCOP(yo.salario)}</td></tr>
+        <tr><td style="font-weight:600;">Supervisor</td><td>${yo.supervisor||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Correo</td><td>${yo.email||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Teléfono</td><td>${yo.telefono||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Puntos de beneficios</td><td>⭐ ${yo.puntos||0}</td></tr>
+      </tbody></table></div>
+    </div>`;
+  } else if(tab==='asistencia'){
+    const {data, error} = await sb.from('asistencia').select('*').eq('empleado_id', yo.id).order('fecha',{ascending:false}).limit(30);
+    if(error){ body.innerHTML = `<p style="color:var(--danger);">Error: ${error.message}</p>`; return; }
+    body.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th><th>Método</th></tr></thead><tbody>
+      ${data.map(a=>`<tr><td>${fmtDate(a.fecha)}</td><td>${a.entrada?a.entrada.slice(0,5):'—'}</td><td>${a.salida?a.salida.slice(0,5):'—'}</td>
+        <td>${a.estado==='A tiempo'?'<span class="pill pill-green">A tiempo</span>':a.estado==='Tarde'?'<span class="pill pill-amber">Tarde</span>':'<span class="pill pill-red">'+(a.estado||'—')+'</span>'}</td>
+        <td>${a.metodo||'—'}</td></tr>`).join('') || `<tr><td colspan="5"><div class="empty"><div class="big">Sin registros</div><div>Aún no tienes marcaciones.</div></div></td></tr>`}
+    </tbody></table></div>`;
+  } else if(tab==='solicitar'){
+    body.innerHTML = `
+    <div class="card card-pad" style="max-width:520px;">
+      <div class="field"><label>Tipo</label><select id="pm_tipo">${['Vacaciones','Permiso remunerado','Permiso no remunerado','Incapacidad','Licencia de maternidad/paternidad'].map(o=>`<option>${o}</option>`).join('')}</select></div>
+      <div class="field-row"><div class="field"><label>Fecha inicio</label><input type="date" id="pm_ini"></div>
+        <div class="field"><label>Fecha fin</label><input type="date" id="pm_fin"></div></div>
+      <div class="field"><label>Motivo</label><textarea id="pm_motivo" placeholder="Cuéntale brevemente a tu jefe o a RRHH…"></textarea></div>
+      <button class="btn btn-primary" onclick="enviarPermiso()">Enviar solicitud</button>
+    </div>`;
+  } else {
+    const {data, error} = await sb.from('permisos').select('*').eq('empleado_id', yo.id).order('created_at',{ascending:false});
+    if(error){ body.innerHTML = `<p style="color:var(--danger);">Error: ${error.message}</p>`; return; }
+    body.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Tipo</th><th>Fechas</th><th class="num-cell">Días</th><th>Motivo</th><th>Estado</th></tr></thead><tbody>
+      ${data.map(l=>`<tr><td>${l.tipo}</td><td>${fmtDate(l.fecha_inicio)} – ${fmtDate(l.fecha_fin)}</td><td class="num-cell">${l.dias}</td><td style="max-width:220px;">${l.motivo||''}</td>
+        <td>${l.estado==='Aprobado'?'<span class="pill pill-green">Aprobado</span>':l.estado==='Rechazado'?'<span class="pill pill-red">Rechazado</span>':'<span class="pill pill-amber">Pendiente</span>'}</td></tr>`).join('')
+        || `<tr><td colspan="5"><div class="empty"><div class="big">Sin solicitudes</div><div>Aún no has pedido permisos ni vacaciones.</div></div></td></tr>`}
+    </tbody></table></div>`;
+  }
+}
+async function enviarPermiso(){
+  const ini = $('#pm_ini').value, fin = $('#pm_fin').value;
+  if(!ini || !fin){ toast('Elige las fechas de inicio y fin'); return; }
+  const dias = Math.max(1, Math.round((new Date(fin)-new Date(ini))/86400000)+1);
+  const {error} = await sb.from('permisos').insert({
+    empleado_id: yo.id, tipo: $('#pm_tipo').value, fecha_inicio: ini, fecha_fin: fin, dias,
+    motivo: $('#pm_motivo').value.trim()||null, estado:'Pendiente',
+  });
+  if(error){ toast('Error al enviar: '+error.message); return; }
+  toast('Solicitud enviada'); tab='misSolicitudes'; renderPortal();
+}
+
+(async function init(){
+  await cargarEmpleados();
+  renderLogin();
+})();
+</script>
+</body>
+</html>
