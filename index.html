@@ -2,166 +2,1887 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi portal · Bitácora</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bitácora · Gestión de Talento Humano</title>
+<meta name="description" content="Sistema de control de personal y RRHH: nómina, asistencia, documentos y firma, objetivos, reconocimientos, beneficios y más.">
 <meta name="theme-color" content="#1E3A75">
-<link rel="stylesheet" href="../assets/styles.css">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bitácora">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjMUUzQTc1Ii8+PHRleHQgeD0iNTAiIHk9IjY3IiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjcwMCIgZm9udC1zaXplPSI1NCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QjwvdGV4dD48Y2lyY2xlIGN4PSI3OCIgY3k9IjIzIiByPSI5IiBmaWxsPSIjRjVBNjIzIi8+PC9zdmc+">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSIjMUUzQTc1Ii8+PHRleHQgeD0iNTAiIHk9IjY3IiBmb250LWZhbWlseT0iQXJpYWwsIEhlbHZldGljYSwgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjcwMCIgZm9udC1zaXplPSI1NCIgZmlsbD0iI2ZmZmZmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QjwvdGV4dD48Y2lyY2xlIGN4PSI3OCIgY3k9IjIzIiByPSI5IiBmaWxsPSIjRjVBNjIzIi8+PC9zdmc+">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#1E3A75; --primary-2:#2F56B0; --primary-3:#4C7CE0; --primary-soft:#E4EAF9;
+  --accent:#F5A623; --accent-soft:#FDECC8; --accent-deep:#C97F0A;
+  --success:#16A34A; --success-soft:#DCFCE7;
+  --danger:#DC2626; --danger-soft:#FEE2E2;
+  --info:#0EA5E9; --info-soft:#E0F2FE;
+  --violet:#7C5CD6; --violet-soft:#EBE4FA;
+  --bg:#EEF1F7; --card:#FFFFFF; --line:#E3E8F0; --line-soft:#EEF1F7;
+  --text:#1F2A44; --muted:#67748E;
+  --radius:12px; --radius-sm:8px;
+  --shadow:0 1px 2px rgba(30,58,117,.06), 0 1px 1px rgba(30,58,117,.04);
+  --shadow-lg:0 18px 40px rgba(20,32,64,.18);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Inter',system-ui,sans-serif; color:var(--text); background:var(--bg);
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif; margin:0; color:var(--primary); font-weight:700;}
+p{margin:0;}
+button{font-family:inherit;}
+input,select,textarea{font-family:inherit; font-size:14px;}
+a{color:inherit;}
+::selection{background:var(--accent-soft);}
+:focus-visible{outline:2px solid var(--primary-3); outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+
+/* ---------- layout ---------- */
+.app{display:flex; min-height:100vh;}
+.sidebar{
+  width:252px; flex:0 0 252px; background:var(--primary); color:#DCE3F5;
+  display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.brand{padding:20px 20px 16px; display:flex; align-items:center; gap:10px;}
+.brand .mark{width:34px; height:34px; border-radius:9px; background:var(--primary-3); display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; color:#fff; font-size:16px; position:relative; flex:0 0 auto;}
+.brand .mark::after{content:''; position:absolute; top:-3px; right:-3px; width:9px; height:9px; border-radius:50%; background:var(--accent); border:2px solid var(--primary);}
+.brand-name{font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:18px; color:#fff; line-height:1.1;}
+.brand-sub{font-size:10.5px; color:#9FADD1; margin-top:1px;}
+.company-line{padding:0 20px 14px; font-size:11.5px; color:#8494C0; border-bottom:1px solid rgba(255,255,255,.1); padding-bottom:14px;}
+.navgroups{padding:8px 12px 10px; flex:1;}
+.navgroup{margin-bottom:2px;}
+.navgroup-head{width:100%; display:flex; align-items:center; justify-content:space-between; background:none; border:none; color:#AEB9DA; font-size:11.5px; font-weight:700; padding:14px 10px 6px; cursor:pointer; letter-spacing:.2px;}
+.navgroup-head .chev{transition:transform .15s; font-size:12px;}
+.navgroup-head .chev.open{transform:rotate(180deg);}
+ul.navlist{list-style:none; margin:0; padding:0; overflow:hidden; max-height:600px; transition:max-height .2s ease;}
+ul.navlist.closed{max-height:0;}
+ul.navlist li{margin-bottom:1px;}
+ul.navlist button{
+  width:100%; text-align:left; background:transparent; border:none; color:#C7D0EA;
+  padding:9px 12px; border-radius:8px; font-size:13.3px; cursor:pointer; display:flex;
+  align-items:center; gap:9px; font-weight:500;
+}
+ul.navlist button .ico{width:16px; text-align:center; opacity:.85; font-size:13px;}
+ul.navlist button:hover{background:rgba(255,255,255,.07); color:#fff;}
+ul.navlist button.active{background:var(--primary-3); color:#fff; font-weight:700; box-shadow:var(--shadow);}
+.badge-nav{margin-left:auto; background:var(--accent); color:#3A2600; font-size:10px; font-weight:800; border-radius:20px; padding:1px 6px; min-width:16px; text-align:center;}
+.sidebar-foot{padding:12px 20px 16px; font-size:10.5px; color:#7C8AB2; border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-foot button{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); color:#fff; font-size:11.5px; padding:7px 10px; border-radius:7px; cursor:pointer; width:100%; margin-top:8px; font-weight:600;}
+
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{
+  position:sticky; top:0; z-index:30; background:rgba(255,255,255,.9); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); padding:12px 26px; display:flex; align-items:center; gap:16px;
+}
+.menu-toggle{display:none; background:none; border:1px solid var(--line); border-radius:8px; padding:7px 10px; cursor:pointer; font-size:15px;}
+.search-wrap{position:relative; flex:1; max-width:380px;}
+.search-wrap input{width:100%; padding:9px 12px 9px 34px; border:1px solid var(--line); border-radius:9px; background:var(--bg); font-size:13px;}
+.search-wrap .sico{position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:13px;}
+.search-drop{position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow-lg); max-height:280px; overflow-y:auto; z-index:40;}
+.search-drop .row{padding:9px 12px; cursor:pointer; display:flex; align-items:center; gap:9px;}
+.search-drop .row:hover{background:var(--bg);}
+.topbar-spacer{flex:1;}
+.topbar-icons{display:flex; align-items:center; gap:4px;}
+.ticon{position:relative; background:none; border:none; width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; color:var(--primary);}
+.ticon:hover{background:var(--bg);}
+.ticon .dot{position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:2px solid #fff;}
+.install-btn{display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#3A2600; border:none; border-radius:9px; padding:8px 13px; font-size:12.5px; font-weight:700; cursor:pointer;}
+.topbar-user{display:flex; align-items:center; gap:8px; padding:5px 10px 5px 5px; border-radius:20px; border:1px solid var(--line); background:#fff;}
+.topbar-user:hover{background:var(--bg);}
+.topbar-user .nm{font-size:12.5px; font-weight:600;}
+.dropdown-panel{position:absolute; top:56px; right:26px; width:320px; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-lg); z-index:50; overflow:hidden;}
+.dropdown-panel .dp-head{padding:12px 16px; font-weight:700; border-bottom:1px solid var(--line); font-size:13px;}
+.dropdown-panel .dp-body{max-height:340px; overflow-y:auto;}
+.dp-item{padding:11px 16px; border-bottom:1px solid var(--line-soft); font-size:12.5px; cursor:pointer;}
+.dp-item:hover{background:var(--bg);}
+.dp-item .t{font-weight:600; color:var(--text);}
+.dp-item .s{color:var(--muted); font-size:11.5px; margin-top:2px;}
+
+/* ---------- alerta de horas semanales excedidas ---------- */
+.alerta-horas-bar{position:sticky; top:0; z-index:35; box-shadow:0 4px 14px rgba(0,0,0,.15);}
+.alerta-horas-item{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:11px 22px; font-size:12.5px; font-weight:600; color:#fff; border-bottom:1px solid rgba(255,255,255,.25); animation:alertaPulse 1.6s ease-in-out infinite;}
+.alerta-horas-item span{line-height:1.4;}
+.alerta-horas-item button{background:#fff; color:var(--danger); border:none; border-radius:7px; padding:7px 14px; font-weight:800; cursor:pointer; flex:0 0 auto; font-size:12px;}
+.alerta-horas-item button:hover{background:var(--danger-soft);}
+@keyframes alertaPulse{0%,100%{background:var(--danger);} 50%{background:#f16060;}}
+
+.content{padding:24px 26px 60px; flex:1;}
+.page-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px; gap:14px; flex-wrap:wrap;}
+.page-head h1{font-size:22px;}
+.page-head .subt{font-size:12.5px; color:var(--muted); margin-top:3px; font-weight:400; font-family:'Inter';}
+
+/* ---------- basic elements ---------- */
+.card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
+.card-pad{padding:20px;}
+.card-bar{background:linear-gradient(135deg,var(--primary),var(--primary-2)); color:#fff; padding:13px 20px; border-radius:var(--radius) var(--radius) 0 0; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:14.5px; display:flex; align-items:center; justify-content:space-between;}
+.section-title{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; gap:12px; flex-wrap:wrap;}
+.section-title h2{font-size:16.5px;}
+.section-title .hint{font-size:12.5px; color:var(--muted); font-family:'Inter'; font-weight:400;}
+
+.grid{display:grid; gap:16px;}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media (max-width:1100px){ .grid-4{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:640px){ .grid-4,.grid-3,.grid-2{grid-template-columns:1fr;} }
+
+.stat{padding:16px 18px; position:relative; overflow:hidden;}
+.stat .lbl{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; align-items:center;}
+.stat .num{font-family:'Plus Jakarta Sans',sans-serif; font-size:26px; font-weight:800; margin-top:6px; color:var(--primary);}
+.stat .sub{font-size:11.5px; color:var(--muted); margin-top:4px;}
+.stat .icochip{width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px;}
+.chip-blue{background:var(--primary-soft); color:var(--primary-2);}
+.chip-amber{background:var(--accent-soft); color:var(--accent-deep);}
+.chip-green{background:var(--success-soft); color:var(--success);}
+.chip-red{background:var(--danger-soft); color:var(--danger);}
+.chip-violet{background:var(--violet-soft); color:var(--violet);}
+.chip-info{background:var(--info-soft); color:var(--info);}
+
+.btn{
+  display:inline-flex; align-items:center; gap:6px; padding:9px 15px; border-radius:9px; border:1px solid transparent;
+  font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap;
+}
+.btn-primary{background:var(--primary-2); color:#fff;}
+.btn-primary:hover{background:var(--primary);}
+.btn-accent{background:var(--accent); color:#3A2600;}
+.btn-accent:hover{background:var(--accent-deep); color:#fff;}
+.btn-ghost{background:transparent; border-color:var(--line); color:var(--text);}
+.btn-ghost:hover{background:var(--bg);}
+.btn-teal{background:var(--success); color:#fff;}
+.btn-danger{background:transparent; border-color:var(--danger); color:var(--danger);}
+.btn-danger:hover{background:var(--danger-soft);}
+.btn-sm{padding:6px 11px; font-size:12px;}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+.icon-btn{background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; line-height:1; padding:4px;}
+.icon-btn:hover{color:var(--text);}
+
+.field{margin-bottom:13px;}
+.field label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px; font-weight:500;}
+.field input, .field select, .field textarea{
+  width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text);
+}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--primary-3);}
+.field textarea{resize:vertical; min-height:70px;}
+.field-row{display:flex; gap:12px;}
+.field-row .field{flex:1;}
+.check-row{display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:12px;}
+
+table{width:100%; border-collapse:collapse; font-size:13px;}
+thead th{
+  text-align:left; font-size:11.5px; font-weight:700; color:var(--muted);
+  padding:10px 12px; border-bottom:1px solid var(--line); background:var(--bg);
+}
+tbody td{padding:10px 12px; border-bottom:1px solid var(--line-soft); vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#FAFBFD;}
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius); background:#fff;}
+.num-cell{text-align:right; font-variant-numeric:tabular-nums;}
+.tbl-input{width:60px; padding:5px 6px; border:1px solid var(--line); border-radius:6px; text-align:right; font-variant-numeric:tabular-nums;}
+
+.pill{display:inline-block; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:700;}
+.pill-green{background:var(--success-soft); color:var(--success);}
+.pill-amber{background:var(--accent-soft); color:var(--accent-deep);}
+.pill-red{background:var(--danger-soft); color:var(--danger);}
+.pill-blue{background:var(--primary-soft); color:var(--primary-2);}
+.pill-gray{background:var(--line-soft); color:var(--muted);}
+.pill-violet{background:var(--violet-soft); color:var(--violet);}
+
+.tabs{display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:18px; flex-wrap:wrap;}
+.tabs button{background:none; border:none; padding:10px 15px; font-size:13px; color:var(--muted); cursor:pointer; border-bottom:2.5px solid transparent; margin-bottom:-1px; font-weight:600;}
+.tabs button.active{color:var(--primary); border-bottom-color:var(--primary-2);}
+
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+.chip{border:1px solid var(--line); background:#fff; padding:6px 13px; border-radius:20px; font-size:12.5px; cursor:pointer; color:var(--muted); font-weight:500;}
+.chip.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+
+.empty{padding:38px 20px; text-align:center; color:var(--muted);}
+.empty .big{font-family:'Plus Jakarta Sans',sans-serif; font-size:16px; color:var(--primary); margin-bottom:6px; font-weight:700;}
+
+/* hexagon avatars */
+.hex{clip-path:polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%); background:var(--primary-3); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; flex:0 0 auto;}
+.hex-sm{width:30px; height:30px; font-size:11px;}
+.hex-md{width:44px; height:44px; font-size:14px;}
+.hex-lg{width:88px; height:88px; font-size:26px;}
+.hex-wrap{position:relative; display:inline-block;}
+.hex-ring{padding:3px; background:var(--primary-soft); clip-path:polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0% 50%);}
+
+.person{display:flex; align-items:center; gap:10px;}
+.person .nm{font-weight:600; font-size:13px;}
+.person .sub{font-size:11.5px; color:var(--muted);}
+
+/* modal */
+.modal-overlay{position:fixed; inset:0; background:rgba(15,23,50,.5); display:flex; align-items:flex-start; justify-content:center; padding:5vh 20px; z-index:100; overflow-y:auto;}
+.modal{background:#fff; border-radius:14px; width:100%; max-width:560px; box-shadow:var(--shadow-lg);}
+.modal.wide{max-width:780px;}
+.modal-head{display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line);}
+.modal-head h3{font-size:16.5px;}
+.modal-body{padding:20px; max-height:70vh; overflow-y:auto;}
+.modal-foot{padding:14px 20px; border-top:1px solid var(--line); display:flex; justify-content:flex-end; gap:10px;}
+
+/* toast */
+#toastRoot{position:fixed; bottom:22px; right:22px; z-index:200; display:flex; flex-direction:column; gap:8px;}
+.toast{background:var(--primary); color:#fff; padding:11px 18px; border-radius:9px; font-size:13px; opacity:0; transform:translateY(8px); transition:opacity .25s, transform .25s; box-shadow:var(--shadow-lg);}
+.toast.show{opacity:1; transform:translateY(0);}
+
+/* ---------- check de confirmación (NFC) ---------- */
+.check-overlay{position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; background:rgba(15,23,44,.4); backdrop-filter:blur(2px); opacity:0; transition:opacity .25s;}
+.check-overlay.show{opacity:1;}
+.check-overlay-card{background:#fff; border-radius:20px; padding:18px 32px 24px; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; align-items:center; gap:4px; transform:scale(.9); transition:transform .25s;}
+.check-overlay.show .check-overlay-card{transform:scale(1);}
+.check-overlay-anim{width:150px; height:150px; border:none; pointer-events:none;}
+.check-overlay-msg{font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; color:var(--success); font-size:15px; text-align:center; margin-top:-6px;}
+
+/* comm center */
+.comm-layout{display:grid; grid-template-columns:320px 1fr; gap:0; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; background:#fff; min-height:520px;}
+.comm-list{border-right:1px solid var(--line); overflow-y:auto; max-height:640px;}
+.comm-item{padding:12px 16px; border-bottom:1px solid var(--line-soft); cursor:pointer;}
+.comm-item:hover{background:#FAFBFD;}
+.comm-item.active{background:var(--primary-soft);}
+.comm-item .top{display:flex; justify-content:space-between; gap:8px;}
+.comm-item .nm{font-weight:700; font-size:13px;}
+.comm-item .ch{font-size:10.5px; color:var(--muted);}
+.comm-item .snip{font-size:12px; color:var(--muted); margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.comm-item .unread{width:7px; height:7px; border-radius:50%; background:var(--accent); display:inline-block; margin-left:6px;}
+.comm-thread{display:flex; flex-direction:column; height:100%;}
+.comm-thread-head{padding:14px 20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+.comm-msgs{flex:1; padding:18px 20px; overflow-y:auto; max-height:460px; display:flex; flex-direction:column; gap:10px;}
+.msg{max-width:70%; padding:9px 13px; border-radius:12px; font-size:13px;}
+.msg.them{background:var(--line-soft); align-self:flex-start;}
+.msg.us{background:var(--primary-2); color:#fff; align-self:flex-end;}
+.msg .hora{display:block; font-size:10px; margin-top:4px; opacity:.7;}
+.comm-reply{border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:8px;}
+.comm-reply textarea{flex:1; resize:none; height:42px; border:1px solid var(--line); border-radius:8px; padding:9px;}
+.acct-chip{display:flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:12px;}
+.acct-chip .ok{width:7px; height:7px; border-radius:50%; background:var(--success);}
+
+/* signature pad */
+.sigpad{border:1.5px dashed var(--line); border-radius:10px; background:#FAFBFD; touch-action:none; cursor:crosshair;}
+
+/* bars */
+.bar-row{margin-bottom:10px;}
+.bar-row .bl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px;}
+.bar-track{background:var(--line-soft); border-radius:5px; height:10px; overflow:hidden;}
+.bar-fill{background:var(--primary-2); height:100%; border-radius:5px;}
+.bar-fill.green{background:var(--success);}
+.bar-fill.amber{background:var(--accent);}
+
+/* recognition cards */
+.recog-card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);}
+.recog-head{padding:11px 16px; font-weight:700; font-size:13px; color:#fff;}
+.recog-body{padding:14px 16px;}
+.recog-title{font-weight:700; font-size:13.5px; margin-bottom:8px;}
+.recog-msg{font-size:12.5px; color:var(--muted); border-left:2px solid var(--line); padding-left:9px; margin-bottom:7px;}
+.recog-foot{display:flex; gap:16px; padding:10px 16px; border-top:1px solid var(--line-soft); font-size:12.5px; color:var(--muted);}
+.recog-foot span{display:flex; align-items:center; gap:5px; cursor:pointer;}
+
+/* benefit cards */
+.benefit-card{border-radius:var(--radius); overflow:hidden; color:#fff; position:relative; min-height:150px; display:flex; flex-direction:column; justify-content:flex-end; padding:16px; box-shadow:var(--shadow);}
+.benefit-card .pts{position:absolute; top:10px; right:10px; background:rgba(255,255,255,.22); backdrop-filter:blur(4px); border-radius:20px; padding:4px 10px; font-size:11px; font-weight:700;}
+.benefit-card .emoji{font-size:26px; margin-bottom:6px;}
+.benefit-card h4{color:#fff; font-size:15px; margin-bottom:4px;}
+.benefit-card p{font-size:11.5px; opacity:.92; margin-bottom:10px;}
+.benefit-card button{align-self:flex-start; background:#fff; color:var(--primary); border:none; border-radius:8px; padding:7px 13px; font-size:12px; font-weight:700; cursor:pointer;}
+
+/* points badge */
+.points-badge{display:flex; align-items:center; gap:8px; background:var(--accent-soft); color:var(--accent-deep); border-radius:20px; padding:8px 16px; font-size:13px; font-weight:700;}
+
+/* mobile */
+@media (max-width:900px){
+  .sidebar{position:fixed; left:-270px; top:0; z-index:60; transition:left .25s; box-shadow:0 0 30px rgba(0,0,0,.3);}
+  .sidebar.open{left:0;}
+  .menu-toggle{display:inline-flex;}
+  .content{padding:18px 16px 50px;}
+  .topbar{padding:12px 16px;}
+  .comm-layout{grid-template-columns:1fr;}
+  .comm-list{max-height:220px;}
+  .search-wrap{max-width:none;}
+  .dropdown-panel{right:16px; width:calc(100vw - 32px);}
+}
+.hidden{display:none !important;}
+
+/* ---------- Portal del colaborador / Kiosco de marcación ----------
+   Estas dos pantallas viven en el mismo archivo que el panel del
+   administrador; comparten la misma paleta y componentes (.card,
+   .field, .btn, .pill, .table-wrap, .stat, .grid-2/4) y añaden solo
+   lo que no existía todavía. */
+.wrap{max-width:760px; margin:0 auto; padding:22px 16px 60px;}
+.topbrand{display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+.topbrand .mark{width:36px; height:36px; border-radius:9px; background:var(--primary); display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; color:#fff; font-size:16px;}
+.topbrand .name{font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:17px; color:var(--primary);}
+.topbrand .sub{font-size:11.5px; color:var(--muted); margin-top:1px;}
+.btn-block{width:100%; justify-content:center;}
+.pill-info{background:var(--info-soft); color:#0369A1;}
+.back-link{display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:12.5px; cursor:pointer; margin-bottom:14px; background:none; border:none; font-family:inherit; padding:0;}
+.back-link:hover{color:var(--primary);}
+
+.kiosk-status{width:100%; padding:26px; border-radius:16px; text-align:center; font-size:16px; font-weight:700; transition:background .2s,color .2s;}
+.kiosk-status.idle{background:var(--primary-soft); color:var(--primary);}
+.kiosk-status.ok{background:var(--success-soft); color:#15803D;}
+.kiosk-status.err{background:var(--danger-soft); color:#B91C1C;}
+.kiosk-clock{font-family:'Plus Jakarta Sans',sans-serif; font-size:44px; font-weight:800; color:var(--primary); text-align:center; margin:6px 0 2px;}
+.kiosk-date{text-align:center; color:var(--muted); font-size:13px; margin-bottom:18px; text-transform:capitalize;}
+.mode-tabs{display:flex; gap:8px; margin-bottom:16px;}
+.mode-tabs button{flex:1; padding:10px; border-radius:10px; border:1px solid var(--line); background:#fff; font-weight:700; font-size:12.5px; cursor:pointer; color:var(--muted);}
+.mode-tabs button.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+
+.mode-select-screen{min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); padding:20px;}
+.mode-select-card{max-width:440px; width:100%; text-align:center;}
+.mode-select-card .brandbig{width:56px; height:56px; border-radius:14px; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:24px; margin:0 auto 14px;}
+.mode-opt{display:flex; align-items:center; gap:12px; padding:14px 16px; border:1px solid var(--line); border-radius:12px; background:#fff; cursor:pointer; margin-top:10px; text-align:left;}
+.mode-opt:hover{border-color:var(--primary-3); box-shadow:var(--shadow);}
+.mode-opt .ico{width:38px; height:38px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:18px; flex:0 0 auto;}
+.mode-opt .t{font-weight:700; font-size:13.5px;}
+.mode-opt .s{font-size:11.5px; color:var(--muted); margin-top:1px;}
+
+/* ---------- Kiosco: botones un poco más grandes (uso táctil) ---------- */
+#rootKiosco .btn{padding:15px 20px; font-size:15px; border-radius:12px;}
+#rootKiosco .mode-tabs button{padding:15px 10px; font-size:14px;}
+#rootKiosco .kiosk-status{font-size:17px; padding:28px;}
+#rootKiosco .field input{padding:13px 14px; font-size:15px;}
+</style>
 </head>
 <body>
-<div id="app"></div>
+<div class="app hidden" id="rootAdmin">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark" id="brandMark">B</div>
+      <div><div class="brand-name" id="brandName">Grupo Meridiano S.A.S.</div><div class="brand-sub" id="brandSub">Bitácora · Gestión de Talento Humano</div></div>
+    </div>
+    <div class="company-line" id="companyLine">NIT 900.482.117-3</div>
+    <div class="navgroups" id="navgroups"></div>
+    <div class="sidebar-foot">
+      Bitácora RRHH · aplicación web progresiva
+      <button onclick="mostrarPortal()">👤 Portal del colaborador</button>
+      <button onclick="mostrarKiosco()">📡 Kiosco de marcación</button>
+      <button id="installBtn" hidden onclick="installApp()">⬇ Instalar aplicación</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="search-wrap">
+        <span class="sico">🔎</span>
+        <input id="globalSearch" placeholder="Buscar colaboradores…" oninput="onGlobalSearch(this.value)" onfocus="onGlobalSearch(this.value)">
+        <div id="searchDrop"></div>
+      </div>
+      <div class="topbar-spacer"></div>
+      <div class="topbar-icons">
+        <button class="ticon" title="Instalar aplicación" id="installBtnTop" hidden onclick="installApp()">⬇</button>
+        <button class="ticon" title="Notificaciones" onclick="toggleDropdown('notif')">🔔<span class="dot" id="notifDot" hidden></span></button>
+        <button class="ticon" title="Ayuda" onclick="toggleDropdown('help')">❓</button>
+        <div class="topbar-user">
+          <div class="hex hex-sm" id="userHex">DA</div>
+          <span class="nm" id="userName">Daniela</span>
+        </div>
+      </div>
+      <div id="dropdownRoot"></div>
+    </div>
+    <div id="alertaHorasRoot"></div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div id="rootPortal" class="hidden"></div>
+<div id="rootKiosco" class="hidden"></div>
+<div id="rootModeSelect" class="hidden"></div>
+
 <div id="modalRoot"></div>
 <div id="toastRoot"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../assets/supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf-autotable.min.js"></script>
 <script>
 /* =========================================================
-   Portal de autoservicio — /usuarios
-   =========================================================
-   Importante: esto NO es un sistema de login real. Cualquiera con
-   el enlace puede elegir cualquier nombre de la lista y ver esos
-   datos — no hay contraseña ni verificación de identidad. Sirve
-   para que cada colaborador consulte su información rápido, pero
-   si vas a manejar datos sensibles de personas reales, lo correcto
-   es activar Supabase Auth (login con correo/contraseña o enlace
-   mágico) y restringir las políticas de RLS en schema.sql para que
-   cada quien solo pueda ver sus propios datos.
-*/
-let empleados = [];
-let yo = null;
-let tab = 'perfil';
+   SUPABASE — conexión con la base de datos
+   ========================================================= */
+const SUPABASE_URL = 'https://sqiipbvzkoopuwbtkdcu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxaWlwYnZ6a29vcHV3YnRrZGN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1Nzk5ODAsImV4cCI6MjEwMjE1NTk4MH0.FxsOKr8Ht2tzBnVQ8X8QdIyJlaSFNI0R2D-0qcKOviI';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function $(s,c=document){return c.querySelector(s);}
-function iniciales(n){return n.split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase();}
+/* Esta pantalla es la del ADMINISTRADOR. Las mismas credenciales
+   (URL + anon key) las usan también /colaboradores/index.html
+   (portal del colaborador) y /marcacion/index.html (kiosco de
+   ingreso/salida por NFC o biometría), así los tres quedan
+   conectados a la misma base de datos en Supabase. */
+
+function empRowToApp(r){
+  return { id:r.id, nombre:r.nombre, cedula:r.cedula, cargo:r.cargo, area:r.area,
+    contrato:r.contrato, ingreso:r.ingreso, salario:Number(r.salario)||0, estado:r.estado,
+    email:r.email||'', tel:r.tel||'', supervisor:r.supervisor||'', huella:!!r.huella, puntos:r.puntos||0 };
+}
+function empAppToRow(e){
+  return { id:e.id, nombre:e.nombre, cedula:e.cedula, cargo:e.cargo, area:e.area,
+    contrato:e.contrato, ingreso:e.ingreso, salario:e.salario, estado:e.estado,
+    email:e.email, tel:e.tel, supervisor:e.supervisor, huella:e.huella, puntos:e.puntos };
+}
+function attRowToApp(r){
+  /* "marcas" guarda TODOS los ingresos/salidas del día (permite más de un
+     ciclo diario). Se serializa como JSON en una columna de Supabase; si esa
+     columna todavía no existe en tu base de datos, se reconstruye a partir
+     de entrada/salida (comportamiento anterior, un solo ciclo). */
+  let marcas = [];
+  try{ marcas = r.marcas? (typeof r.marcas==='string'? JSON.parse(r.marcas) : r.marcas) : []; }catch(_e){ marcas = []; }
+  if(!marcas.length){ if(r.entrada) marcas.push({hora:r.entrada, tipo:'Entrada'}); if(r.salida) marcas.push({hora:r.salida, tipo:'Salida'}); }
+  return { id:r.id, empId:r.empleado_id, fecha:r.fecha, entrada:r.entrada, salida:r.salida, estado:r.estado, metodo:r.metodo, marcas };
+}
+/* Todas las funciones sb* devuelven true/false para que quien las llame pueda
+   avisarle al usuario cuando el guardado en la base de datos falla, en vez de
+   fallar en silencio (solo quedaba un console.warn antes). */
+async function sbGuardarEmpleado(e){
+  try{ const {error} = await sb.from('empleados').upsert(empAppToRow(e)); if(error){ console.warn('Supabase (empleados):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+async function sbActualizarEstadoEmpleado(id, estado){
+  try{ const {error} = await sb.from('empleados').update({estado}).eq('id', id); if(error){ console.warn('Supabase (empleados):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+async function sbGuardarParametros(cfg){
+  try{
+    const row = { id:1, smmlv:cfg.smmlv, aux_transporte:cfg.auxTransporte, salud_pct:cfg.saludPct, pension_pct:cfg.pensionPct,
+      horas_mes:cfg.horasMes, r_hed:cfg.rHED, r_hen:cfg.rHEN, r_hefd:cfg.rHEFD, r_hefn:cfg.rHEFN,
+      pct_cesantias:cfg.pctCesantias, pct_intereses_cesantias:cfg.pctIntCesantias, pct_prima:cfg.pctPrima, pct_vacaciones:cfg.pctVacaciones,
+      pct_arl:cfg.pctArl, pct_caja_compensacion:cfg.pctCaja, pct_sena:cfg.pctSena, pct_icbf:cfg.pctIcbf,
+      pct_salud_empleador:cfg.pctSaludPatronal, pct_pension_empleador:cfg.pctPensionPatronal, exoneracion_aportes:cfg.exoneracion,
+      horas_semanales_max:cfg.horasSemanalesMax,
+      company_name:cfg.companyName, company_nit:cfg.companyNit };
+    let {error} = await sb.from('parametros').upsert(row);
+    if(error && /horas_semanales_max/i.test(error.message||'')){
+      /* La columna "horas_semanales_max" todavía no existe en la tabla
+         "parametros" de Supabase; se reintenta sin ella. Agrégala (tipo
+         numérico) para que el límite legal de jornada quede guardado. */
+      delete row.horas_semanales_max;
+      ({error} = await sb.from('parametros').upsert(row));
+    }
+    if(error){ console.warn('Supabase (parametros):', error.message); return false; } return true;
+  } catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+async function sbRegistrarMarcacion(rec){
+  try{
+    const row = { id:rec.id, empleado_id:rec.empId, fecha:rec.fecha, entrada:rec.entrada, salida:rec.salida, estado:rec.estado, metodo:rec.metodo||'Manual', marcas: JSON.stringify(rec.marcas||[]) };
+    let {error} = await sb.from('asistencia').upsert(row);
+    if(error && /marcas/i.test(error.message||'')){
+      /* La columna "marcas" (tipo texto o jsonb) todavía no existe en la
+         tabla "asistencia" de Supabase. Se reintenta sin ella para no perder
+         el resto del registro; agrega esa columna para guardar el historial
+         completo de ingresos/salidas del día entre sesiones. */
+      delete row.marcas;
+      ({error} = await sb.from('asistencia').upsert(row));
+    }
+    if(error){ console.warn('Supabase (asistencia):', error.message); return false; }
+    return true;
+  } catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+async function sbBorrarTodosLosEmpleados(){
+  const {error} = await sb.from('empleados').delete().not('id','is', null);
+  if(error) throw error;
+}
+/* Solicitudes (permisos y vacaciones) — usadas tanto por el admin
+   (DB.leaveRequests) como por el portal del colaborador. */
+function solRowToApp(r){
+  const dias = Math.max(1, Math.round((new Date(r.fecha_fin)-new Date(r.fecha_inicio))/86400000)+1);
+  return { id:r.id, empId:r.empleado_id, tipo:r.tipo, inicio:r.fecha_inicio, fin:r.fecha_fin, dias, motivo:r.motivo||'', estado:r.estado };
+}
+function solAppToRow(l){
+  return { id:l.id, empleado_id:l.empId, tipo:l.tipo, fecha_inicio:l.inicio, fecha_fin:l.fin, motivo:l.motivo, estado:l.estado };
+}
+async function sbGuardarSolicitud(l){
+  try{ const {error} = await sb.from('solicitudes').upsert(solAppToRow(l)); if(error){ console.warn('Supabase (solicitudes):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+async function sbActualizarSolicitud(id, estado){
+  try{ const {error} = await sb.from('solicitudes').update({estado}).eq('id', id); if(error){ console.warn('Supabase (solicitudes):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+/* Huellas (credenciales WebAuthn registradas desde el kiosco) */
+async function sbGuardarHuella(h){
+  try{ const {error} = await sb.from('huellas').upsert(h, {onConflict:'credential_id'}); if(error){ console.warn('Supabase (huellas):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+async function cargarDesdeSupabase(){
+  try{
+    const [{data:emps, error:e1}, {data:atts, error:e2}, {data:par, error:e3}, {data:sols, error:e4}, {data:huellasData, error:e5}] = await Promise.all([
+      sb.from('empleados').select('*'), sb.from('asistencia').select('*'), sb.from('parametros').select('*').eq('id',1).maybeSingle(),
+      sb.from('solicitudes').select('*'), sb.from('huellas').select('*'),
+    ]);
+    if(!e1 && emps){ DB.empleados = emps.map(empRowToApp); }
+    else if(e1){ console.warn('Supabase (empleados):', e1.message); toast('⚠️ No se pudieron cargar los colaboradores desde la base de datos: '+e1.message); }
+    if(!e2 && atts){ DB.attendance = atts.map(attRowToApp); }
+    else if(e2){ console.warn('Supabase (asistencia):', e2.message); }
+    if(!e4 && sols){ DB.leaveRequests = sols.map(solRowToApp); }
+    else if(e4){ console.warn('Supabase (solicitudes):', e4.message); }
+    if(!e5 && huellasData){ DB.huellas = huellasData; }
+    else if(e5){ console.warn('Supabase (huellas):', e5.message); }
+    if(!e3 && par){
+      Object.assign(CFG, { smmlv:Number(par.smmlv)||CFG.smmlv, auxTransporte:Number(par.aux_transporte)||0,
+        saludPct:Number(par.salud_pct)||0, pensionPct:Number(par.pension_pct)||0, horasMes:Number(par.horas_mes)||230,
+        rHED:Number(par.r_hed)||0, rHEN:Number(par.r_hen)||0, rHEFD:Number(par.r_hefd)||0, rHEFN:Number(par.r_hefn)||0,
+        pctCesantias:Number(par.pct_cesantias)||CFG.pctCesantias, pctIntCesantias:Number(par.pct_intereses_cesantias)||CFG.pctIntCesantias,
+        pctPrima:Number(par.pct_prima)||CFG.pctPrima, pctVacaciones:Number(par.pct_vacaciones)||CFG.pctVacaciones,
+        pctArl:Number(par.pct_arl)||CFG.pctArl, pctCaja:Number(par.pct_caja_compensacion)||CFG.pctCaja,
+        pctSena:Number(par.pct_sena)||CFG.pctSena, pctIcbf:Number(par.pct_icbf)||CFG.pctIcbf,
+        pctSaludPatronal:Number(par.pct_salud_empleador)||CFG.pctSaludPatronal, pctPensionPatronal:Number(par.pct_pension_empleador)||CFG.pctPensionPatronal,
+        exoneracion: par.exoneracion_aportes!==null? !!par.exoneracion_aportes : CFG.exoneracion,
+        horasSemanalesMax:Number(par.horas_semanales_max)||CFG.horasSemanalesMax,
+        companyName: par.company_name||CFG.companyName, companyNit: par.company_nit||CFG.companyNit });
+    } else if(e3){ console.warn('Supabase (parametros):', e3.message); }
+  } catch(err){
+    console.warn('No se pudo conectar a Supabase:', err.message);
+    toast('⚠️ No se pudo conectar a la base de datos: '+err.message);
+  }
+}
+
+/* =========================================================
+   CONFIGURACIÓN Y CONSTANTES
+   ========================================================= */
+const DEMO_TODAY = '2026-09-15';
+let CFG = { smmlv:1423500, auxTransporte:200000, saludPct:4, pensionPct:4, horasMes:230,
+  rHED:25, rHEN:75, rHEFD:100, rHEFN:150,
+  /* Prestaciones sociales y aportes patronales — Código Sustantivo del Trabajo
+     y Ley 1607 de 2012 (exoneración de aportes). Valores por defecto según
+     la normativa vigente; edítalos desde "Parámetros legales" si cambian. */
+  pctCesantias:8.33, pctIntCesantias:12, pctPrima:8.33, pctVacaciones:4.17,
+  pctArl:0.522, pctCaja:4, pctSena:2, pctIcbf:3, pctSaludPatronal:8.5, pctPensionPatronal:12,
+  exoneracion:true,
+  /* Jornada máxima legal semanal (Ley 2101 de 2021, art. 161 CST — reducción
+     gradual de 48 a 42 horas). Desde el 16 de julio de 2026 el tope es de
+     42 horas semanales. Ajusta este valor desde "Parámetros legales" si la
+     norma vuelve a cambiar o si tu empresa tiene una jornada pactada distinta. */
+  horasSemanalesMax:42,
+  companyName:'Grupo Meridiano S.A.S.', companyNit:'900.482.117-3', companyLogo:null };
+
+/* =========================================================
+   DATOS BASE (en memoria — sin almacenamiento persistente)
+   ========================================================= */
+const DB = {
+  seq:{emp:1, run:1, att:1, shift:4, leave:1, doc:1, cpl:1, ast:1, svy:1, rec:1, obj:1, ben:1, adv:1, rep:1},
+  /* Sin datos de demostración: todo se carga desde Supabase en cargarDesdeSupabase().
+     Estos arreglos arrancan vacíos y solo contienen información real capturada
+     por el usuario o sincronizada desde la base de datos. */
+  empleados:[],
+  payrollRuns:[],
+  attendance:[],
+  huellas:[], // credenciales WebAuthn del kiosco: {credential_id, empleado_id, public_key, counter}
+  shifts:[
+    {id:'shift1', nombre:'Administrativo', inicio:'08:00', fin:'17:00', dias:'Lun–Vie'},
+    {id:'shift2', nombre:'Operaciones / Bodega', inicio:'06:30', fin:'15:30', dias:'Lun–Sáb'},
+    {id:'shift3', nombre:'Comercial', inicio:'09:00', fin:'18:00', dias:'Lun–Vie'},
+  ],
+  leaveRequests:[],
+  documents:[],
+  complaints:[],
+  comm:{ gmail:[], outlook:[], whatsapp:[] },
+  assets:[],
+  surveys:[],
+  recognitions:[],
+  objectives:[],
+  benefits:[
+    {id:'ben1', categoria:'Fitness', nombre:'Reembolso semestral de gimnasio', descripcion:'Reembolsa hasta $150.000 de tu membresía cada semestre.', puntos:150, emoji:'🏃'},
+    {id:'ben2', categoria:'Salud', nombre:'Chequeo médico preferencial', descripcion:'Acceso prioritario a exámenes médicos anuales.', puntos:200, emoji:'❤️'},
+    {id:'ben3', categoria:'Conocimiento', nombre:'Auxilio de estudio', descripcion:'Apoyo económico para cursos y certificaciones.', puntos:300, emoji:'🎓'},
+    {id:'ben4', categoria:'Seguros', nombre:'Póliza de vida grupal', descripcion:'Cobertura adicional para ti y tu familia.', puntos:250, emoji:'🛡️'},
+    {id:'ben5', categoria:'Restaurantes', nombre:'Descuentos en restaurantes aliados', descripcion:'15% de descuento en más de 40 restaurantes.', puntos:80, emoji:'🍔'},
+    {id:'ben6', categoria:'Fitness', nombre:'Clases grupales de yoga', descripcion:'Dos clases semanales en la sede principal.', puntos:100, emoji:'🧘'},
+    {id:'ben7', categoria:'Otros', nombre:'Día de cumpleaños libre', descripcion:'Un día libre remunerado en tu cumpleaños.', puntos:50, emoji:'🎂'},
+    {id:'ben8', categoria:'Conocimiento', nombre:'Suscripción a plataforma de e-learning', descripcion:'Acceso ilimitado a cursos online.', puntos:120, emoji:'💻'},
+    {id:'ben9', categoria:'Salud', nombre:'Sesiones de bienestar emocional', descripcion:'Acompañamiento con profesionales aliados.', puntos:180, emoji:'🌱'},
+  ],
+  benefitRequests:[],
+  advances:[],
+  reports:[],
+};
+
+/* =========================================================
+   ESTADO DE NAVEGACIÓN
+   ========================================================= */
+let state = {
+  view:'dashboard',
+  empSearch:'', docSearch:'', globalSearch:'',
+  assetFilterEstado:'Todos', assetFilterCat:'Todas',
+  commTab:'todos', commThreadId:null,
+  complaintTab:'nueva', complaintSel:null,
+  payrollOpenRun: null,
+  surveyTemp:null, surveyTab:'gestion',
+  navCollapsed:{},
+  currentEmp:null,
+  openDropdown:null,
+  objEmp:null, recogFiltro:'Todas',
+  /* alertasHoras: clave "{empId}_{lunesDeLaSemana}" -> {empId,nombre,horas,limite,revisado}.
+     Se usa para no repetir la alarma sonora una vez que el admin ya la revisó
+     esa semana para ese colaborador. */
+  alertasHoras:{},
+  /* Reportes: cálculo de horas laboradas por día / semana / mes / año */
+  reportPeriodo:'semana', reportFecha:DEMO_TODAY, reportEmpFiltro:'todos',
+};
+
+const NAV_GROUPS = [
+  {id:'principal', label:null, items:[
+    {id:'dashboard', label:'Resumen', ico:'📊'},
+    {id:'empleados', label:'Colaboradores', ico:'🧑\u200d💼'},
+    {id:'reportes', label:'Reportes', ico:'📤'},
+    {id:'asistencia', label:'Asistencia', ico:'🕒'},
+  ]},
+];
+const TITLES = {
+  dashboard:['Resumen','Panorama general de la compañía'],
+  empleados:['Colaboradores','Ficha maestra del personal activo e inactivo'],
+  reportes:['Reportes','Cálculo de horas laboradas y exportadores'],
+  asistencia:['Asistencia','Turnos, marcaciones, permisos y vacaciones'],
+};
+
+function $(sel,ctx=document){return ctx.querySelector(sel);}
+function $all(sel,ctx=document){return [...ctx.querySelectorAll(sel)];}
+function emp(id){return DB.empleados.find(e=>e.id===id);}
+function iniciales(nombre){return nombre.split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase();}
+function apellidosDe(nombre){const p=nombre.split(' ').filter(Boolean); return p.slice(-2).join(' ');}
+function nombresDe(nombre){const p=nombre.split(' ').filter(Boolean); return p.slice(0,Math.max(1,p.length-2)).join(' ');}
 function fmtCOP(n){return (n||0).toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});}
-function fmtDate(iso){ if(!iso) return '—'; return new Date(iso+'T00:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtDateTime(iso){ const d=new Date(iso); return d.toLocaleString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function uid(kind){ return kind+(DB.seq[kind]++); }
+function hexAvatar(empId, size){
+  const e = emp(empId); if(!e) return '';
+  size = size||'md';
+  return `<div class="hex hex-${size}">${iniciales(e.nombre)}</div>`;
+}
+
 function toast(msg){
   const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
   $('#toastRoot').appendChild(t);
   requestAnimationFrame(()=>t.classList.add('show'));
   setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},2600);
 }
-function openModal(title, body, foot){
-  $('#modalRoot').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this) closeModal()">
-    <div class="modal"><div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="closeModal()">✕</button></div>
-    <div class="modal-body">${body}</div>${foot? `<div class="modal-foot">${foot}</div>`:''}</div></div>`;
+/* Animación de confirmación (check) para marcaciones NFC exitosas y para la
+   asignación de un tag NFC. Se muestra un par de segundos y se retira sola. */
+function mostrarCheckExito(mensaje){
+  const root = document.createElement('div');
+  root.className = 'check-overlay';
+  root.innerHTML = `
+    <div class="check-overlay-card">
+      <iframe class="check-overlay-anim" src="https://lottie.host/embed/312f68b9-b13e-4f56-89ec-3c1dd9fc8522/o7zwnccNM9.lottie" title="Confirmado" frameborder="0"></iframe>
+      ${mensaje? `<div class="check-overlay-msg">${mensaje}</div>` : ''}
+    </div>`;
+  document.body.appendChild(root);
+  requestAnimationFrame(()=>root.classList.add('show'));
+  setTimeout(()=>{ root.classList.remove('show'); setTimeout(()=>root.remove(), 300); }, 2000);
+}
+function openModal(title, bodyHtml, footHtml, wide){
+  $('#modalRoot').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal ${wide?'wide':''}">
+        <div class="modal-head"><h3>${title}</h3><button class="icon-btn" onclick="closeModal()">✕</button></div>
+        <div class="modal-body">${bodyHtml}</div>
+        ${footHtml? `<div class="modal-foot">${footHtml}</div>` : ''}
+      </div>
+    </div>`;
 }
 function closeModal(){ $('#modalRoot').innerHTML=''; }
+function toggleSidebar(){ $('#sidebar').classList.toggle('open'); }
+function toggleGroup(id){ state.navCollapsed[id]=!state.navCollapsed[id]; renderApp(); }
 
-async function cargarEmpleados(){
-  const {data, error} = await sb.from('empleados').select('*').eq('estado','Activo').order('nombre');
-  if(error){ toast('No se pudo conectar a Supabase: '+error.message); empleados=[]; return; }
-  empleados = data;
+/* =========================================================
+   RENDER PRINCIPAL / NAVEGACIÓN
+   ========================================================= */
+function navigate(view){ state.view=view; state.openDropdown=null; $('#sidebar').classList.remove('open'); renderApp(); }
+
+function pendingCounts(){
+  return {
+    permisos: DB.leaveRequests.filter(l=>l.estado==='Pendiente').length,
+    documentos: DB.documents.filter(d=>d.estado==='Pendiente').length,
+    denuncias: DB.complaints.filter(c=>c.estado==='Nuevo').length,
+    beneficios: DB.benefitRequests.filter(b=>b.estado==='Pendiente').length,
+  };
+}
+function unreadComm(){ return allThreads().filter(t=>!t.leido).length; }
+
+function renderBrand(){
+  const markEl = $('#brandMark');
+  if(CFG.companyLogo){
+    markEl.innerHTML = `<img src="${CFG.companyLogo}" alt="Logo de la empresa" style="width:100%;height:100%;object-fit:cover;border-radius:9px;">`;
+    markEl.style.background = '#fff';
+  } else {
+    markEl.textContent = iniciales(CFG.companyName||'Bitácora');
+    markEl.style.background = '';
+  }
+  $('#brandName').textContent = CFG.companyName || 'Bitácora';
+  $('#companyLine').textContent = CFG.companyNit? 'NIT '+CFG.companyNit : '';
+  document.title = (CFG.companyName? CFG.companyName+' · ' : '') + 'Bitácora — Gestión de Talento Humano';
+}
+function abrirConfigEmpresa(){
+  const body = `
+    <div class="field"><label>Nombre de la empresa</label><input id="ce_nombre" value="${CFG.companyName||''}" placeholder="Ej. Grupo Meridiano S.A.S."></div>
+    <div class="field"><label>NIT</label><input id="ce_nit" value="${CFG.companyNit||''}" placeholder="Ej. 900.482.117-3"></div>
+    <div class="field"><label>Logo de la empresa</label><input type="file" id="ce_logo" accept="image/*"></div>
+    <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+      <div class="hex hex-lg" id="ce_preview" style="${CFG.companyLogo?'background:#fff;':''}">${CFG.companyLogo? `<img src="${CFG.companyLogo}" style="width:100%;height:100%;object-fit:cover;">` : iniciales(CFG.companyName||'Bitácora')}</div>
+      <div style="font-size:11.5px; color:var(--muted);">Vista previa del logo. Recomendado: imagen cuadrada, menos de 1&nbsp;MB.<br>${CFG.companyLogo? '<span style="cursor:pointer; color:var(--danger); font-weight:600;" onclick="quitarLogoEmpresa()">Quitar logo</span>' : ''}</div>
+    </div>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarConfigEmpresa()">Guardar</button>`;
+  openModal('Nombre y logo de la empresa', body, foot);
+  setTimeout(()=>{
+    const input = $('#ce_logo');
+    if(input) input.addEventListener('change', function(){
+      const file = this.files[0]; if(!file) return;
+      if(file.size > 1500000){ toast('La imagen es muy pesada, usa una de menos de 1 MB'); this.value=''; return; }
+      const reader = new FileReader();
+      reader.onload = (ev)=>{ tempLogoDataUrl = ev.target.result; const p=$('#ce_preview'); if(p){ p.style.background='#fff'; p.innerHTML = `<img src="${tempLogoDataUrl}" style="width:100%;height:100%;object-fit:cover;">`; } };
+      reader.readAsDataURL(file);
+    });
+  }, 30);
+}
+let tempLogoDataUrl = null;
+function quitarLogoEmpresa(){ tempLogoDataUrl='REMOVE'; const p=$('#ce_preview'); if(p){ p.style.background=''; p.innerHTML = iniciales($('#ce_nombre').value.trim()||CFG.companyName||'Bitácora'); } }
+function guardarConfigEmpresa(){
+  const nombre = $('#ce_nombre').value.trim();
+  if(!nombre){ toast('Escribe el nombre de la empresa'); return; }
+  CFG.companyName = nombre;
+  CFG.companyNit = $('#ce_nit').value.trim();
+  if(tempLogoDataUrl==='REMOVE'){ CFG.companyLogo=null; }
+  else if(tempLogoDataUrl){ CFG.companyLogo = tempLogoDataUrl; }
+  tempLogoDataUrl = null;
+  closeModal(); toast('Nombre y logo de la empresa actualizados'); renderApp();
 }
 
-function renderLogin(){
-  $('#app').innerHTML = `
-  <div class="auth-shell">
-    <div class="auth-card">
-      <div class="mark">B</div>
-      <h1>Mi portal</h1>
-      <div class="subt">Bitácora · autoservicio para colaboradores</div>
-      <div class="field"><label>Selecciona tu nombre</label>
-        <select id="login_emp">${empleados.length? empleados.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('') : '<option value="">No hay colaboradores registrados</option>'}</select>
-      </div>
-      <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="entrar()" ${!empleados.length?'disabled':''}>Entrar</button>
-      <div class="auth-note">Este portal no pide contraseña: cualquiera con el enlace puede entrar como cualquier colaborador de la lista. No lo uses todavía con información sensible real sin activar un login de verdad.</div>
+function renderApp(){
+  renderBrand();
+  $('#navgroups').innerHTML = NAV_GROUPS.map(g=>{
+    const collapsed = !!state.navCollapsed[g.id];
+    const head = g.label? `<button class="navgroup-head" onclick="toggleGroup('${g.id}')"><span>${g.label}</span><span class="chev ${collapsed?'':'open'}">⌄</span></button>` : '';
+    return `<div class="navgroup">${head}<ul class="navlist ${collapsed?'closed':''}">${g.items.map(n=>`<li><button class="${state.view===n.id?'active':''}" onclick="navigate('${n.id}')"><span class="ico">${n.ico}</span>${n.label}</button></li>`).join('')}</ul></div>`;
+  }).join('');
+
+  const renderers = {
+    dashboard:renderDashboard, empleados:renderEmpleados, asistencia:renderAsistencia, reportes:renderReportes,
+  };
+  let bodyHtml;
+  try{
+    bodyHtml = renderers[state.view]();
+  } catch(err){
+    console.warn('Error renderizando la vista', state.view, err);
+    bodyHtml = emptyState('Aún no hay colaboradores registrados', 'Crea el primer colaborador desde "Colaboradores" para habilitar esta sección.');
+  }
+  $('#content').innerHTML = `<div class="page-head"><div><h1>${TITLES[state.view][0]}</h1><div class="subt">${TITLES[state.view][1]}</div></div></div>` + bodyHtml;
+
+  const you = emp(state.currentEmp) || DB.empleados[0];
+  $('#userHex').textContent = you? iniciales(you.nombre) : '—';
+  $('#userName').textContent = you? you.nombre.split(' ')[0] : 'Sin colaboradores';
+
+  const pc = pendingCounts();
+  const totalNotif = pc.permisos+pc.documentos+pc.denuncias+pc.beneficios;
+  $('#notifDot').hidden = totalNotif===0;
+
+  if(state.openDropdown) renderDropdown(state.openDropdown); else $('#dropdownRoot').innerHTML='';
+  renderAlertasHorasBanner();
+  afterRenderHooks();
+}
+function afterRenderHooks(){ if(state.view==='comunicacion') scrollMsgsToBottom(); }
+
+/* ---- topbar: búsqueda global ---- */
+function onGlobalSearch(v){
+  state.globalSearch=v;
+  const drop = $('#searchDrop');
+  if(!v){ drop.innerHTML=''; drop.classList.remove('search-drop'); return; }
+  const q=v.toLowerCase();
+  const matches = DB.empleados.filter(e=>e.nombre.toLowerCase().includes(q) || e.cargo.toLowerCase().includes(q)).slice(0,6);
+  drop.className='search-drop';
+  drop.innerHTML = matches.length? matches.map(e=>`<div class="row" onclick="$('#globalSearch').value=''; onGlobalSearch(''); verPerfil('${e.id}')">${hexAvatar(e.id,'sm')}<div><div style="font-weight:600; font-size:12.5px;">${e.nombre}</div><div style="font-size:11px; color:var(--muted);">${e.cargo}</div></div></div>`).join('')
+    : `<div class="row" style="color:var(--muted);">Sin resultados</div>`;
+}
+document.addEventListener('click', (ev)=>{
+  if(!ev.target.closest('.search-wrap')){ const d=$('#searchDrop'); if(d){ d.innerHTML=''; d.className=''; } }
+  if(!ev.target.closest('.topbar-user') && !ev.target.closest('.ticon') && !ev.target.closest('.dropdown-panel')){
+    if(state.openDropdown){ state.openDropdown=null; $('#dropdownRoot').innerHTML=''; }
+  }
+});
+
+/* ---- topbar: dropdowns (notificaciones / ayuda / usuario) ---- */
+function toggleDropdown(which){ state.openDropdown = state.openDropdown===which? null : which; renderDropdown(state.openDropdown); }
+function renderDropdown(which){
+  const root = $('#dropdownRoot');
+  if(!which){ root.innerHTML=''; return; }
+  if(which==='notif'){
+    const items = [
+      ...DB.leaveRequests.filter(l=>l.estado==='Pendiente').map(l=>({t:`Permiso pendiente — ${emp(l.empId).nombre}`, s:`${l.tipo} · ${fmtDate(l.inicio)}`, go:'asistencia'})),
+      ...DB.documents.filter(d=>d.estado==='Pendiente').map(d=>({t:`Documento sin firmar — ${d.nombre}`, s:emp(d.empId).nombre, go:'documentos'})),
+      ...DB.complaints.filter(c=>c.estado==='Nuevo').map(c=>({t:`Nueva denuncia ${c.folio}`, s:c.categoria, go:'denuncias'})),
+      ...DB.benefitRequests.filter(b=>b.estado==='Pendiente').map(b=>({t:`Solicitud de beneficio — ${emp(b.empId).nombre}`, s:DB.benefits.find(x=>x.id===b.beneficioId).nombre, go:'beneficios'})),
+    ];
+    root.innerHTML = `<div class="dropdown-panel"><div class="dp-head">Notificaciones</div><div class="dp-body">
+      ${items.length? items.map(it=>`<div class="dp-item" onclick="navigate('${it.go}')"><div class="t">${it.t}</div><div class="s">${it.s}</div></div>`).join('') : '<div class="dp-item"><div class="s">No tienes notificaciones pendientes.</div></div>'}
+    </div></div>`;
+  } else if(which==='help'){
+    root.innerHTML = `<div class="dropdown-panel"><div class="dp-head">Ayuda</div><div class="dp-body">
+      <div class="dp-item"><div class="t">Acerca de Bitácora</div><div class="s">Aplicación web progresiva de control de personal. Los datos viven en memoria mientras la pestaña está abierta.</div></div>
+      <div class="dp-item"><div class="t">Atajo de búsqueda</div><div class="s">Usa el buscador superior para encontrar colaboradores por nombre o cargo.</div></div>
+      <div class="dp-item"><div class="t">Instalar como app</div><div class="s">Si tu navegador lo permite, usa el botón "Instalar aplicación" en la barra lateral.</div></div>
+    </div></div>`;
+  } else if(which==='user'){
+    const activos = DB.empleados.filter(e=>e.estado==='Activo');
+    root.innerHTML = `<div class="dropdown-panel"><div class="dp-head">Vista de autoservicio</div><div class="dp-body">
+      <div style="padding:12px 16px;"><label style="font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px;">Ver Beneficios, Adelantos y Encuestas como:</label>
+      <select onchange="state.currentEmp=this.value; renderApp();" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:8px;">
+        ${activos.map(e=>`<option value="${e.id}" ${state.currentEmp===e.id?'selected':''}>${e.nombre}</option>`).join('')}
+      </select></div>
+    </div></div>`;
+  }
+}
+
+function personCell(empId){
+  const e = emp(empId); if(!e) return '—';
+  return `<div class="person">${hexAvatar(empId,'sm')}<div><div class="nm">${e.nombre}</div><div class="sub">${e.cargo}</div></div></div>`;
+}
+function emptyState(big, small){ return `<div class="empty"><div class="big">${big}</div><div>${small}</div></div>`; }
+
+/* =========================================================
+   HORAS TRABAJADAS Y JORNADA SEMANAL MÁXIMA (Ley 2101 de 2021)
+   Un registro de asistencia (DB.attendance) ahora puede tener
+   varios ciclos de entrada/salida en el mismo día (rec.marcas).
+   Estas funciones calculan las horas efectivamente laboradas por
+   día y por semana a partir de esas marcaciones.
+   ========================================================= */
+function marcasDeRegistro(rec){
+  if(rec.marcas && rec.marcas.length) return rec.marcas;
+  const m=[]; if(rec.entrada) m.push({hora:rec.entrada, tipo:'Entrada'}); if(rec.salida) m.push({hora:rec.salida, tipo:'Salida'}); return m;
+}
+function horaAMinutos(hstr){ if(!hstr) return null; const p=hstr.split(':'); return (Number(p[0])||0)*60 + (Number(p[1])||0); }
+function horasDeRegistro(rec){
+  const marcas = marcasDeRegistro(rec).slice().sort((a,b)=>horaAMinutos(a.hora)-horaAMinutos(b.hora));
+  let total=0, abierta=null;
+  marcas.forEach(m=>{
+    if(m.tipo==='Entrada'){ abierta = m.hora; }
+    else if(m.tipo==='Salida' && abierta!=null){
+      let mins = horaAMinutos(m.hora) - horaAMinutos(abierta);
+      if(mins<0) mins += 24*60; // cruce de medianoche
+      total += mins/60; abierta = null;
+    }
+  });
+  return { horas: total, abierta };
+}
+function inicioSemanaISO(fechaISO){
+  const d = new Date(fechaISO+'T00:00:00'); const dow = d.getDay(); const diff = dow===0? -6 : 1-dow;
+  d.setDate(d.getDate()+diff); return d.toISOString().slice(0,10);
+}
+function finSemanaISO(inicioISO){ const d=new Date(inicioISO+'T00:00:00'); d.setDate(d.getDate()+6); return d.toISOString().slice(0,10); }
+function horasSemanaEmpleado(empId, fechaRef){
+  const ini = inicioSemanaISO(fechaRef), fin = finSemanaISO(ini);
+  return DB.attendance.filter(a=>a.empId===empId && a.fecha>=ini && a.fecha<=fin)
+    .reduce((sum,a)=> sum + horasDeRegistro(a).horas, 0);
+}
+
+/* ---------------------------------------------------------
+   ALARMA SONORA: cuando un colaborador supera las horas
+   semanales reglamentadas, se dispara una voz que repite
+   "Revisar tiempo laboral de <nombre>" cada pocos segundos y
+   no se detiene hasta que el administrador presiona "Ya revisé".
+   --------------------------------------------------------- */
+let _alarmaHorasInterval = null;
+function alertasHorasPendientes(){ return Object.entries(state.alertasHoras).filter(([_,a])=>!a.revisado); }
+function verificarAlertaHoras(e){
+  if(!e || e.estado!=='Activo') return;
+  const limite = CFG.horasSemanalesMax||42;
+  const horas = horasSemanaEmpleado(e.id, DEMO_TODAY);
+  const key = e.id+'_'+inicioSemanaISO(DEMO_TODAY);
+  if(horas > limite){
+    const existente = state.alertasHoras[key];
+    if(!existente){
+      state.alertasHoras[key] = { empId:e.id, nombre:e.nombre, horas:Math.round(horas*10)/10, limite, revisado:false };
+      iniciarAlarmaHoras();
+    } else if(!existente.revisado){
+      existente.horas = Math.round(horas*10)/10; // mantiene el conteo actualizado mientras no se revise
+    }
+  }
+  renderAlertasHorasBanner();
+}
+function verificarTodasLasAlertasHoras(){ DB.empleados.filter(e=>e.estado==='Activo').forEach(verificarAlertaHoras); }
+function iniciarAlarmaHoras(){
+  if(_alarmaHorasInterval) return; // ya está sonando
+  hablarAlertaHoras();
+  _alarmaHorasInterval = setInterval(hablarAlertaHoras, 8000);
+}
+function detenerAlarmaHorasSiNoHayPendientes(){
+  if(!alertasHorasPendientes().length && _alarmaHorasInterval){ clearInterval(_alarmaHorasInterval); _alarmaHorasInterval=null; if('speechSynthesis' in window) speechSynthesis.cancel(); }
+}
+function hablarAlertaHoras(){
+  const pendientes = alertasHorasPendientes();
+  if(!pendientes.length){ detenerAlarmaHorasSiNoHayPendientes(); return; }
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  pendientes.forEach(([_,a], i)=>{
+    const u = new SpeechSynthesisUtterance(`Revisar tiempo laboral de ${a.nombre}`);
+    u.lang='es-CO'; u.rate=0.95; u.pitch=1;
+    setTimeout(()=>{ try{ speechSynthesis.speak(u); }catch(_e){} }, i*2600);
+  });
+}
+function revisarAlertaHoras(key){
+  if(state.alertasHoras[key]) state.alertasHoras[key].revisado = true;
+  detenerAlarmaHorasSiNoHayPendientes();
+  renderAlertasHorasBanner();
+}
+function renderAlertasHorasBanner(){
+  const root = $('#alertaHorasRoot'); if(!root) return;
+  const pendientes = alertasHorasPendientes();
+  if(!pendientes.length){ root.innerHTML=''; return; }
+  root.innerHTML = `<div class="alerta-horas-bar">${pendientes.map(([key,a])=>`
+    <div class="alerta-horas-item">
+      <span>🔊 <strong>${a.nombre}</strong> superó la jornada semanal máxima permitida (${a.limite}h según la Ley 2101) — lleva <strong>${a.horas}h</strong> esta semana.</span>
+      <button onclick="revisarAlertaHoras('${key}')">Ya revisé</button>
+    </div>`).join('')}</div>`;
+}
+
+/* =========================================================
+   EXPORTACIÓN CSV (usado por Reportes y por varios módulos)
+   ========================================================= */
+function exportCSV(filename, headers, rows){
+  const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  const csv = [headers.map(esc).join(','), ...rows.map(r=>r.map(esc).join(','))].join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+/* =========================================================
+   1. DASHBOARD
+   ========================================================= */
+function renderDashboard(){
+  const activos = DB.empleados.filter(e=>e.estado==='Activo');
+  const marcHoy = DB.attendance.filter(a=>a.fecha===DEMO_TODAY);
+  const aTiempo = marcHoy.filter(a=>a.estado==='A tiempo').length;
+  const pctATiempo = marcHoy.length? Math.round(aTiempo/marcHoy.length*100) : 0;
+  const horasHoyTotal = marcHoy.reduce((s,a)=> s + horasDeRegistro(a).horas, 0);
+  const permPend = DB.leaveRequests.filter(l=>l.estado==='Pendiente');
+  const limiteSemanal = CFG.horasSemanalesMax||42;
+  const sobreLimite = activos.filter(e=> horasSemanaEmpleado(e.id, DEMO_TODAY) > limiteSemanal);
+
+  return `
+  <div class="card card-pad" style="margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="hex hex-lg" style="${CFG.companyLogo?'background:#fff;':''}">${CFG.companyLogo? `<img src="${CFG.companyLogo}" style="width:100%;height:100%;object-fit:cover;">` : iniciales(CFG.companyName||'Bitácora')}</div>
+      <div><h3 style="font-size:16px;">${CFG.companyName}</h3><p style="font-size:12px; color:var(--muted); margin-top:2px;">${CFG.companyNit? 'NIT '+CFG.companyNit : 'Sin NIT registrado'} · así se ve tu marca en Bitácora</p></div>
+    </div>
+    <button class="btn btn-ghost" onclick="abrirConfigEmpresa()">✏️ Cambiar nombre y logo</button>
+  </div>
+  <div class="grid grid-4" style="margin-bottom:18px;">
+    <div class="card stat"><div class="lbl"><span>Colaboradores activos</span><span class="icochip chip-blue">🧑‍💼</span></div><div class="num">${activos.length}</div><div class="sub">${DB.empleados.length-activos.length} inactivos</div></div>
+    <div class="card stat"><div class="lbl"><span>Asistencia puntual hoy</span><span class="icochip chip-info">🕒</span></div><div class="num">${pctATiempo}%</div><div class="sub">${marcHoy.length} marcaciones registradas hoy</div></div>
+    <div class="card stat"><div class="lbl"><span>Horas laboradas hoy</span><span class="icochip chip-green">⏱️</span></div><div class="num">${horasHoyTotal.toFixed(1)}h</div><div class="sub">suma de todos los colaboradores</div></div>
+    <div class="card stat"><div class="lbl"><span>Permisos por aprobar</span><span class="icochip chip-amber">📋</span></div><div class="num">${permPend.length}</div><div class="sub">solicitudes pendientes</div></div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card card-pad">
+      <div class="section-title"><h2>Permisos por aprobar</h2><span class="hint">${permPend.length} solicitudes</span></div>
+      ${permPend.length? `<div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Tipo</th><th>Fechas</th><th></th></tr></thead><tbody>
+        ${permPend.map(l=>`<tr><td>${personCell(l.empId)}</td><td>${l.tipo}</td><td>${fmtDate(l.inicio)} – ${fmtDate(l.fin)}</td><td><button class="btn btn-ghost btn-sm" onclick="navigate('asistencia')">Revisar</button></td></tr>`).join('')}
+      </tbody></table></div>` : emptyState('Sin pendientes','No hay solicitudes de permisos o vacaciones esperando aprobación.')}
+    </div>
+    <div class="card card-pad">
+      <div class="section-title"><h2>Jornada semanal excedida</h2><span class="hint">Límite ${limiteSemanal}h (Ley 2101)</span></div>
+      ${sobreLimite.length? `<div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Horas esta semana</th></tr></thead><tbody>
+        ${sobreLimite.map(e=>`<tr><td>${personCell(e.id)}</td><td><span class="pill pill-red">${horasSemanaEmpleado(e.id, DEMO_TODAY).toFixed(1)}h</span></td></tr>`).join('')}
+      </tbody></table></div>` : emptyState('Todo en orden','Ningún colaborador activo superó la jornada semanal máxima.')}
     </div>
   </div>`;
 }
-function entrar(){
-  const id = $('#login_emp').value; if(!id) return;
-  yo = empleados.find(e=>e.id===id);
-  tab = 'perfil';
-  renderPortal();
-}
-function salir(){ yo=null; renderLogin(); }
 
-async function renderPortal(){
-  $('#app').innerHTML = `
-    <div class="portal-topbar">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <div class="hex hex-sm">${iniciales(yo.nombre)}</div>
-        <div><div style="font-weight:700; font-size:13.5px;">${yo.nombre}</div><div style="font-size:11.5px; color:var(--muted);">${yo.cargo||''}</div></div>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="salir()">Salir</button>
+/* =========================================================
+   2. COLABORADORES (+ ficha enriquecida)
+   ========================================================= */
+function renderEmpleados(){
+  const q = state.empSearch.toLowerCase();
+  const rows = DB.empleados.filter(e=> e.nombre.toLowerCase().includes(q) || e.cargo.toLowerCase().includes(q) || e.area.toLowerCase().includes(q));
+  return `
+  <div class="section-title">
+    <div class="field" style="margin:0; width:300px;"><input placeholder="Buscar por nombre, cargo o área…" value="${state.empSearch}" oninput="state.empSearch=this.value; renderApp();"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-danger" onclick="abrirBorrarTodosEmpleados()">🗑️ Borrar todos los registros</button>
+      <button class="btn btn-primary" onclick="abrirFormEmpleado()">+ Nuevo colaborador</button>
     </div>
-    <div class="portal-shell">
-      <div class="tabs">
-        <button class="${tab==='perfil'?'active':''}" onclick="cambiarTab('perfil')">Mi perfil</button>
-        <button class="${tab==='asistencia'?'active':''}" onclick="cambiarTab('asistencia')">Mi asistencia</button>
-        <button class="${tab==='solicitar'?'active':''}" onclick="cambiarTab('solicitar')">Solicitar permiso</button>
-        <button class="${tab==='misSolicitudes'?'active':''}" onclick="cambiarTab('misSolicitudes')">Mis solicitudes</button>
-      </div>
-      <div id="tabBody"><div class="empty"><div class="big">Cargando…</div></div></div>
-    </div>`;
-  await renderTab();
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Colaborador</th><th>Área</th><th>Contrato</th><th>Ingreso</th><th class="num-cell">Salario base</th><th>Huella</th><th>Estado</th><th></th></tr></thead>
+    <tbody>
+      ${rows.map(e=>`<tr>
+        <td>${personCell(e.id)}</td>
+        <td>${e.area}</td>
+        <td>${e.contrato}</td>
+        <td>${fmtDate(e.ingreso)}</td>
+        <td class="num-cell">${fmtCOP(e.salario)}</td>
+        <td>${e.huella? '<span class="pill pill-green">✓ Registrada</span>' : '<span class="pill pill-gray">Sin registrar</span>'}</td>
+        <td>${e.estado==='Activo'? '<span class="pill pill-green">Activo</span>' : '<span class="pill pill-red">Inactivo</span>'}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="verPerfil('${e.id}')">Ver perfil</button></td>
+      </tr>`).join('')}
+      ${!rows.length? `<tr><td colspan="8">${emptyState('Sin resultados','Ningún colaborador coincide con la búsqueda.')}</td></tr>` : ''}
+    </tbody>
+  </table></div>`;
 }
-async function cambiarTab(t){ tab=t; await renderTab(); }
-
-async function renderTab(){
-  const body = $('#tabBody');
-  if(tab==='perfil'){
-    body.innerHTML = `
-    <div class="card card-pad" style="max-width:520px;">
-      <div class="table-wrap"><table><tbody>
-        <tr><td style="font-weight:600; width:40%;">Cédula</td><td>${yo.cedula||'—'}</td></tr>
-        <tr><td style="font-weight:600;">Cargo</td><td>${yo.cargo||'—'}</td></tr>
-        <tr><td style="font-weight:600;">Área</td><td>${yo.area||'—'}</td></tr>
-        <tr><td style="font-weight:600;">Tipo de contrato</td><td>${yo.contrato||'—'}</td></tr>
-        <tr><td style="font-weight:600;">Fecha de ingreso</td><td>${fmtDate(yo.ingreso)}</td></tr>
-        <tr><td style="font-weight:600;">Salario base</td><td>${fmtCOP(yo.salario)}</td></tr>
-        <tr><td style="font-weight:600;">Supervisor</td><td>${yo.supervisor||'—'}</td></tr>
-        <tr><td style="font-weight:600;">Correo</td><td>${yo.email||'—'}</td></tr>
-        <tr><td style="font-weight:600;">Teléfono</td><td>${yo.telefono||'—'}</td></tr>
-        <tr><td style="font-weight:600;">Puntos de beneficios</td><td>⭐ ${yo.puntos||0}</td></tr>
-      </tbody></table></div>
+function abrirFormEmpleado(id){
+  const e = id? emp(id) : null;
+  const body = `
+    <div class="field-row"><div class="field"><label>Nombre completo</label><input id="f_nombre" value="${e?e.nombre:''}"></div>
+      <div class="field"><label>Cédula</label><input id="f_cedula" value="${e?e.cedula:''}"></div></div>
+    <div class="field-row"><div class="field"><label>Cargo</label><input id="f_cargo" value="${e?e.cargo:''}"></div>
+      <div class="field"><label>Área</label><input id="f_area" value="${e?e.area:''}"></div></div>
+    <div class="field-row"><div class="field"><label>Tipo de contrato</label>
+        <select id="f_contrato">${['Término indefinido','Término fijo','Prestación de servicios','Aprendizaje'].map(o=>`<option ${e&&e.contrato===o?'selected':''}>${o}</option>`).join('')}</select></div>
+      <div class="field"><label>Fecha de ingreso</label><input type="date" id="f_ingreso" value="${e?e.ingreso:DEMO_TODAY}"></div></div>
+    <div class="field-row"><div class="field"><label>Salario base (COP)</label><input type="number" id="f_salario" value="${e?e.salario:1423500}"></div>
+      <div class="field"><label>Estado</label><select id="f_estado">${['Activo','Inactivo'].map(o=>`<option ${e&&e.estado===o?'selected':''}>${o}</option>`).join('')}</select></div></div>
+    <div class="field-row"><div class="field"><label>Correo</label><input id="f_email" value="${e?e.email:''}"></div>
+      <div class="field"><label>Teléfono</label><input id="f_tel" value="${e?e.tel:''}"></div></div>
+    <div class="field"><label>Supervisor</label><input id="f_super" value="${e?e.supervisor:''}"></div>
+    <div class="field">
+      <label>Tag NFC (marcación de ingreso y salida)</label>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <button type="button" id="nfc_btn" class="btn btn-ghost btn-sm" onclick="asignarTagNFC()">📶 Asignar tag NFC</button>
+        <span id="nfc_form_status" style="font-size:12px; color:var(--muted);">La cédula debe estar diligenciada antes de grabar el tag.</span>
+      </div>
+      <div style="font-size:11.5px; color:var(--muted); margin-top:4px;">Presiona el botón una sola vez y acerca el tag al lector NFC del celular; no lo vuelvas a presionar mientras diga "Acerca el tag…".</div>
     </div>`;
-  } else if(tab==='asistencia'){
-    const {data, error} = await sb.from('asistencia').select('*').eq('empleado_id', yo.id).order('fecha',{ascending:false}).limit(30);
-    if(error){ body.innerHTML = `<p style="color:var(--danger);">Error: ${error.message}</p>`; return; }
-    body.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th><th>Método</th></tr></thead><tbody>
-      ${data.map(a=>`<tr><td>${fmtDate(a.fecha)}</td><td>${a.entrada?a.entrada.slice(0,5):'—'}</td><td>${a.salida?a.salida.slice(0,5):'—'}</td>
-        <td>${a.estado==='A tiempo'?'<span class="pill pill-green">A tiempo</span>':a.estado==='Tarde'?'<span class="pill pill-amber">Tarde</span>':'<span class="pill pill-red">'+(a.estado||'—')+'</span>'}</td>
-        <td>${a.metodo||'—'}</td></tr>`).join('') || `<tr><td colspan="5"><div class="empty"><div class="big">Sin registros</div><div>Aún no tienes marcaciones.</div></div></td></tr>`}
-    </tbody></table></div>`;
-  } else if(tab==='solicitar'){
-    body.innerHTML = `
-    <div class="card card-pad" style="max-width:520px;">
-      <div class="field"><label>Tipo</label><select id="pm_tipo">${['Vacaciones','Permiso remunerado','Permiso no remunerado','Incapacidad','Licencia de maternidad/paternidad'].map(o=>`<option>${o}</option>`).join('')}</select></div>
-      <div class="field-row"><div class="field"><label>Fecha inicio</label><input type="date" id="pm_ini"></div>
-        <div class="field"><label>Fecha fin</label><input type="date" id="pm_fin"></div></div>
-      <div class="field"><label>Motivo</label><textarea id="pm_motivo" placeholder="Cuéntale brevemente a tu jefe o a RRHH…"></textarea></div>
-      <button class="btn btn-primary" onclick="enviarPermiso()">Enviar solicitud</button>
-    </div>`;
-  } else {
-    const {data, error} = await sb.from('permisos').select('*').eq('empleado_id', yo.id).order('created_at',{ascending:false});
-    if(error){ body.innerHTML = `<p style="color:var(--danger);">Error: ${error.message}</p>`; return; }
-    body.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Tipo</th><th>Fechas</th><th class="num-cell">Días</th><th>Motivo</th><th>Estado</th></tr></thead><tbody>
-      ${data.map(l=>`<tr><td>${l.tipo}</td><td>${fmtDate(l.fecha_inicio)} – ${fmtDate(l.fecha_fin)}</td><td class="num-cell">${l.dias}</td><td style="max-width:220px;">${l.motivo||''}</td>
-        <td>${l.estado==='Aprobado'?'<span class="pill pill-green">Aprobado</span>':l.estado==='Rechazado'?'<span class="pill pill-red">Rechazado</span>':'<span class="pill pill-amber">Pendiente</span>'}</td></tr>`).join('')
-        || `<tr><td colspan="5"><div class="empty"><div class="big">Sin solicitudes</div><div>Aún no has pedido permisos ni vacaciones.</div></div></td></tr>`}
-    </tbody></table></div>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarEmpleado('${id||''}')">Guardar</button>`;
+  openModal(e? 'Editar colaborador' : 'Nuevo colaborador', body, foot);
+}
+/* Graba la cédula del colaborador (tomada del formulario, aunque aún no se
+   haya guardado) en un tag NFC físico. El kiosco de marcación (kioscoEscanearNFC)
+   lee ese mismo valor para identificar al colaborador al marcar ingreso/salida. */
+/* Controla que solo haya una escritura NFC activa a la vez: si el usuario
+   presiona el botón de nuevo mientras hay una escritura pendiente (esperando
+   que acerque el tag), Chrome cancela la anterior con el error "Push is
+   cancelled due to a new push request". Por eso cancelamos cualquier
+   escritura previa antes de iniciar una nueva, y deshabilitamos el botón
+   mientras está en curso para que no se pueda disparar dos veces seguidas. */
+let _nfcWriteController = null;
+async function asignarTagNFC(){
+  const statusEl = $('#nfc_form_status');
+  const btnEl = $('#nfc_btn');
+  const cedula = ($('#f_cedula')?.value||'').trim();
+  if(!cedula){ if(statusEl){ statusEl.textContent='Escribe primero la cédula del colaborador.'; statusEl.style.color='var(--danger)'; } return; }
+  if(!('NDEFReader' in window)){
+    if(statusEl){ statusEl.textContent='Web NFC no está disponible en este dispositivo o navegador (usa Chrome en Android).'; statusEl.style.color='var(--danger)'; }
+    return;
+  }
+  /* cancela cualquier escritura anterior que siga esperando un tag */
+  if(_nfcWriteController){ _nfcWriteController.abort(); _nfcWriteController = null; }
+  const controller = new AbortController();
+  _nfcWriteController = controller;
+  if(btnEl) btnEl.disabled = true;
+  try{
+    if(statusEl){ statusEl.textContent='Acerca el tag NFC al lector…'; statusEl.style.color='var(--muted)'; }
+    const writer = new NDEFReader();
+    await writer.write({ records:[{ recordType:'text', data:cedula }] }, { signal: controller.signal });
+    if(statusEl){ statusEl.textContent='✓ Tag NFC asignado correctamente a la cédula '+cedula+'.'; statusEl.style.color='var(--success)'; }
+    mostrarCheckExito('Tag NFC asignado — '+cedula);
+  } catch(err){
+    if(err.name==='AbortError'){
+      /* esta escritura fue cancelada a propósito por un nuevo intento; no mostramos error */
+    } else if(/cancel/i.test(err.message)){
+      if(statusEl){ statusEl.textContent='Se canceló la grabación porque el botón se presionó más de una vez. Presiónalo una sola vez y acerca el tag de inmediato.'; statusEl.style.color='var(--danger)'; }
+    } else {
+      if(statusEl){ statusEl.textContent='No se pudo grabar el tag: '+err.message; statusEl.style.color='var(--danger)'; }
+    }
+  } finally {
+    if(_nfcWriteController===controller) _nfcWriteController = null;
+    if(btnEl) btnEl.disabled = false;
   }
 }
-async function enviarPermiso(){
-  const ini = $('#pm_ini').value, fin = $('#pm_fin').value;
-  if(!ini || !fin){ toast('Elige las fechas de inicio y fin'); return; }
-  const dias = Math.max(1, Math.round((new Date(fin)-new Date(ini))/86400000)+1);
-  const {error} = await sb.from('permisos').insert({
-    empleado_id: yo.id, tipo: $('#pm_tipo').value, fecha_inicio: ini, fecha_fin: fin, dias,
-    motivo: $('#pm_motivo').value.trim()||null, estado:'Pendiente',
-  });
-  if(error){ toast('Error al enviar: '+error.message); return; }
-  toast('Solicitud enviada'); tab='misSolicitudes'; renderPortal();
+async function guardarEmpleado(id){
+  const data = {
+    nombre:$('#f_nombre').value.trim(), cedula:$('#f_cedula').value.trim(), cargo:$('#f_cargo').value.trim(), area:$('#f_area').value.trim(),
+    contrato:$('#f_contrato').value, ingreso:$('#f_ingreso').value, salario:Number($('#f_salario').value)||0,
+    estado:$('#f_estado').value, email:$('#f_email').value.trim(), tel:$('#f_tel').value.trim(), supervisor:$('#f_super').value.trim(),
+  };
+  if(!data.nombre || !data.cargo){ toast('Completa al menos nombre y cargo'); return; }
+  let saved;
+  if(id){ saved = Object.assign(emp(id), data); }
+  else{ saved = {id:uid('emp'), huella:false, puntos:0, ...data}; DB.empleados.push(saved); }
+  const ok = await sbGuardarEmpleado(saved);
+  if(ok){ toast(id? 'Colaborador actualizado y guardado' : 'Colaborador creado y guardado'); }
+  else{ toast('⚠️ El colaborador se guardó localmente, pero falló el guardado en la base de datos. Revisa la consola.'); }
+  if(!state.currentEmp) state.currentEmp = saved.id;
+  if(!state.objEmp) state.objEmp = saved.id;
+  closeModal(); renderApp();
+}
+function abrirBorrarTodosEmpleados(){
+  const body = `
+    <p style="font-size:13px; margin-bottom:12px;">Esta acción borrará <strong>todos</strong> los colaboradores y su asistencia asociada, tanto en esta pantalla como en la base de datos de Supabase. No se puede deshacer.</p>
+    <div class="field"><label>Escribe la contraseña para confirmar</label><input type="password" id="bt_pass" placeholder="••••" maxlength="4" autocomplete="off"></div>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-danger" onclick="confirmarBorrarTodosEmpleados()">Borrar todo</button>`;
+  openModal('Borrar todos los registros de colaboradores', body, foot);
+  setTimeout(()=>{ const i=$('#bt_pass'); if(i) i.focus(); }, 30);
+}
+async function confirmarBorrarTodosEmpleados(){
+  const pass = ($('#bt_pass')||{}).value;
+  if(pass !== '0000'){ toast('Contraseña incorrecta'); return; }
+  try{
+    await sbBorrarTodosLosEmpleados();
+    DB.empleados = []; DB.attendance = [];
+    DB.payrollRuns.forEach(r=> r.detalles = []);
+    state.currentEmp = null; state.objEmp = null;
+    closeModal(); toast('Todos los registros de colaboradores fueron eliminados'); renderApp();
+  } catch(err){
+    toast('No se pudo borrar en Supabase: '+err.message);
+  }
+}
+function resumenMensual(empId){
+  const regs = DB.attendance.filter(a=>a.empId===empId && a.fecha.slice(0,7)===DEMO_TODAY.slice(0,7));
+  const horasMes = regs.reduce((s,a)=> s + horasDeRegistro(a).horas, 0);
+  return {
+    asistencias: regs.filter(a=>a.entrada).length,
+    inasistencias: regs.filter(a=>a.estado==='Ausente').length,
+    atrasos: regs.filter(a=>a.estado==='Tarde').length,
+    horasMes,
+  };
+}
+function verPerfil(empId){
+  const e = emp(empId);
+  const r = resumenMensual(empId);
+  const hoy = DB.attendance.find(a=>a.empId===empId && a.fecha===DEMO_TODAY);
+  const body = `
+  <div style="display:flex; gap:20px; flex-wrap:wrap;">
+    <div style="flex:1; min-width:220px;">
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+        <div class="hex-ring"><div class="hex hex-lg">${iniciales(e.nombre)}</div></div>
+        <div><h3 style="font-size:18px;">${e.nombre}</h3><p style="font-size:12.5px; color:var(--muted); margin-top:2px;">${e.cargo}</p></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+        ${e.huella? '<span class="pill pill-green">🔒 Huella registrada</span>' : `<span class="pill pill-gray">Sin huella registrada</span> <button class="btn btn-ghost btn-sm" onclick="registrarHuella('${e.id}')">Registrar huella</button>`}
+      </div>
+      <div class="table-wrap"><table><tbody>
+        <tr><td style="font-weight:600; width:40%;">Cédula</td><td>${e.cedula}</td></tr>
+        <tr><td style="font-weight:600;">Nombres</td><td>${nombresDe(e.nombre)}</td></tr>
+        <tr><td style="font-weight:600;">Apellidos</td><td>${apellidosDe(e.nombre)}</td></tr>
+        <tr><td style="font-weight:600;">Empresa</td><td>${CFG.companyName}</td></tr>
+        <tr><td style="font-weight:600;">Contrato</td><td>${e.contrato}</td></tr>
+        <tr><td style="font-weight:600;">Área</td><td>${e.area}</td></tr>
+        <tr><td style="font-weight:600;">Supervisor</td><td>${e.supervisor||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Email</td><td>${e.email}</td></tr>
+        <tr><td style="font-weight:600;">Teléfono</td><td>${e.tel}</td></tr>
+      </tbody></table></div>
+    </div>
+    <div style="flex:1; min-width:220px;">
+      <h4 style="font-size:13px; margin-bottom:10px;">Resumen mensual</h4>
+      <div class="grid grid-2" style="margin-bottom:16px;">
+        <div class="card stat" style="padding:12px;"><div class="lbl">Asistencias</div><div class="num" style="font-size:20px;">${r.asistencias}</div></div>
+        <div class="card stat" style="padding:12px;"><div class="lbl">Inasistencias</div><div class="num" style="font-size:20px;">${r.inasistencias}</div></div>
+        <div class="card stat" style="padding:12px;"><div class="lbl">Atrasos</div><div class="num" style="font-size:20px;">${r.atrasos}</div></div>
+        <div class="card stat" style="padding:12px;"><div class="lbl">Horas trabajadas (mes)</div><div class="num" style="font-size:20px;">${r.horasMes.toFixed(1)}h</div></div>
+      </div>
+      <h4 style="font-size:13px; margin-bottom:10px;">Registro del día</h4>
+      <div class="table-wrap" style="margin-bottom:16px;"><table><tbody>
+        <tr><td style="font-weight:600; width:40%;">Marcaciones</td><td>${hoy? marcasDeRegistro(hoy).map(m=>`${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}`).join(' · ')||'—' : '—'}</td></tr>
+        <tr><td style="font-weight:600;">Horas hoy</td><td>${hoy? horasDeRegistro(hoy).horas.toFixed(1)+'h' : '—'}</td></tr>
+        <tr><td style="font-weight:600;">Horas esta semana</td><td>${horasSemanaEmpleado(e.id, DEMO_TODAY).toFixed(1)}h / ${CFG.horasSemanalesMax||42}h</td></tr>
+      </tbody></table></div>
+      <div class="points-badge" style="margin-bottom:16px;">⭐ ${e.puntos} puntos disponibles</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="closeModal(); abrirFormEmpleado('${e.id}')">Editar trabajo</button>
+        <button class="btn btn-ghost btn-sm" onclick="renovarContrato('${e.id}')">Renovar contrato</button>
+        ${e.estado==='Activo'? `<button class="btn btn-danger btn-sm" onclick="terminarTrabajo('${e.id}')">Terminar trabajo</button>` : `<button class="btn btn-teal btn-sm" onclick="reactivarTrabajo('${e.id}')">Reactivar</button>`}
+      </div>
+    </div>
+  </div>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`;
+  openModal('Perfil del colaborador', body, foot, true);
+}
+async function registrarHuella(empId){ const e=emp(empId); e.huella=true; const ok=await sbGuardarEmpleado(e); toast(ok? 'Huella registrada correctamente' : '⚠️ La huella se guardó localmente, pero falló el guardado en la base de datos.'); verPerfil(empId); }
+function renovarContrato(empId){
+  const e = emp(empId);
+  DB.documents.push({id:uid('doc'), empId, nombre:'Otrosí — renovación de contrato', tipo:'Otrosí', fecha:DEMO_TODAY, estado:'Pendiente', firmante:null, firmaFecha:null});
+  toast('Contrato renovado. Se generó un otrosí pendiente de firma.'); closeModal();
+}
+async function terminarTrabajo(empId){
+  const e = emp(empId);
+  if(!confirm(`¿Confirmas terminar el vínculo laboral de ${e.nombre}?`)) return;
+  e.estado='Inactivo';
+  const ok = await sbActualizarEstadoEmpleado(e.id,'Inactivo');
+  toast(ok? 'Colaborador marcado como inactivo' : '⚠️ Se marcó como inactivo localmente, pero falló el guardado en la base de datos.');
+  closeModal(); if(state.view==='empleados') renderApp();
+}
+async function reactivarTrabajo(empId){
+  const e=emp(empId); e.estado='Activo';
+  const ok = await sbActualizarEstadoEmpleado(e.id,'Activo');
+  toast(ok? 'Colaborador reactivado' : '⚠️ Se reactivó localmente, pero falló el guardado en la base de datos.');
+  closeModal(); if(state.view==='empleados') renderApp();
+}
+function generarDocumentoDesdePerfil(empId){
+  DB.documents.push({id:uid('doc'), empId, nombre:'Certificación laboral', tipo:'Certificación', fecha:DEMO_TODAY, estado:'Pendiente', firmante:null, firmaFecha:null});
+  toast('Documento generado, pendiente de firma'); closeModal(); navigate('documentos');
 }
 
-(async function init(){
-  await cargarEmpleados();
-  renderLogin();
-})();
+/* =========================================================
+   4. ASISTENCIA
+   ========================================================= */
+function renderAsistencia(){
+  const marcHoy = DB.attendance.filter(a=>a.fecha===DEMO_TODAY).sort((a,b)=>emp(a.empId).nombre.localeCompare(emp(b.empId).nombre));
+  const fueraHoy = DB.leaveRequests.filter(l=>l.estado==='Aprobado' && l.inicio<=DEMO_TODAY && l.fin>=DEMO_TODAY);
+  const pendientes = DB.leaveRequests.filter(l=>l.estado==='Pendiente');
+  const limiteSemanal = CFG.horasSemanalesMax||42;
+  return `
+  <div class="grid grid-2" style="margin-bottom:18px;">
+    <div class="card card-pad">
+      <div class="section-title"><h2>Marcaciones de hoy</h2><button class="btn btn-primary btn-sm" onclick="abrirMarcacion()">+ Registrar marcación</button></div>
+      <p class="hint" style="margin:-6px 0 12px;">Cada colaborador puede marcar varios ingresos y salidas en el mismo día; las horas se suman automáticamente. Jornada máxima legal: <strong>${limiteSemanal}h/semana</strong> (Ley 2101 de 2021).</p>
+      <div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Marcaciones de hoy</th><th>Horas hoy</th><th>Horas semana</th><th>Estado</th></tr></thead><tbody>
+        ${marcHoy.map(a=>{
+          const horasHoy = horasDeRegistro(a).horas;
+          const horasSemana = horasSemanaEmpleado(a.empId, DEMO_TODAY);
+          const sobreLimite = horasSemana > limiteSemanal;
+          const chips = marcasDeRegistro(a).map(m=>`<span class="pill ${m.tipo==='Entrada'?'pill-green':'pill-gray'}" style="margin:1px 3px 1px 0;">${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}</span>`).join('');
+          return `<tr>
+            <td>${personCell(a.empId)}</td>
+            <td>${chips||'—'}</td>
+            <td>${horasHoy? horasHoy.toFixed(1)+'h' : '—'}</td>
+            <td>${sobreLimite? `<span class="pill pill-red">${horasSemana.toFixed(1)}h / ${limiteSemanal}h</span>` : `${horasSemana.toFixed(1)}h / ${limiteSemanal}h`}</td>
+            <td>${pillAsistencia(a.estado)}</td>
+          </tr>`;
+        }).join('')}
+        ${!marcHoy.length? `<tr><td colspan="5">${emptyState('Sin marcaciones','Aún no se registran marcaciones para hoy.')}</td></tr>`:''}
+      </tbody></table></div>
+    </div>
+    <div class="card card-pad">
+      <div class="section-title"><h2>Fuera de la oficina hoy</h2><span class="hint">${fueraHoy.length} colaboradores</span></div>
+      ${fueraHoy.length? `<div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Tipo</th><th>Regresa</th></tr></thead><tbody>
+        ${fueraHoy.map(l=>`<tr><td>${personCell(l.empId)}</td><td>${l.tipo}</td><td>${fmtDate(l.fin)}</td></tr>`).join('')}
+      </tbody></table></div>` : emptyState('Equipo completo','Nadie tiene permisos o vacaciones activas hoy.')}
+      <h2 style="font-size:14px; margin:18px 0 10px;">Turnos configurados</h2>
+      <div class="table-wrap"><table><thead><tr><th>Turno</th><th>Horario</th><th>Días</th></tr></thead><tbody>
+        ${DB.shifts.map(s=>`<tr><td>${s.nombre}</td><td>${s.inicio} – ${s.fin}</td><td>${s.dias}</td></tr>`).join('')}
+      </tbody></table></div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="abrirTurno()">+ Nuevo turno</button>
+    </div>
+  </div>
+  <div class="card card-pad">
+    <div class="section-title"><h2>Permisos y vacaciones</h2><button class="btn btn-primary btn-sm" onclick="abrirPermiso()">+ Nueva solicitud</button></div>
+    <div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Tipo</th><th>Fechas</th><th class="num-cell">Días</th><th>Motivo</th><th>Estado</th><th></th></tr></thead><tbody>
+      ${[...DB.leaveRequests].reverse().map(l=>`<tr>
+        <td>${personCell(l.empId)}</td><td>${l.tipo}</td><td>${fmtDate(l.inicio)} – ${fmtDate(l.fin)}</td><td class="num-cell">${l.dias}</td><td style="max-width:220px;">${l.motivo}</td>
+        <td>${pillPermiso(l.estado)}</td>
+        <td>${l.estado==='Pendiente'? `<button class="btn btn-teal btn-sm" onclick="resolverPermiso('${l.id}','Aprobado')">Aprobar</button> <button class="btn btn-danger btn-sm" onclick="resolverPermiso('${l.id}','Rechazado')">Rechazar</button>` : ''}</td>
+      </tr>`).join('')}
+    </tbody></table></div>
+  </div>`;
+}
+function pillAsistencia(estado){
+  if(estado==='A tiempo') return '<span class="pill pill-green">A tiempo</span>';
+  if(estado==='Tarde') return '<span class="pill pill-amber">Tarde</span>';
+  return '<span class="pill pill-red">Ausente</span>';
+}
+function pillPermiso(estado){
+  if(estado==='Aprobado') return '<span class="pill pill-green">Aprobado</span>';
+  if(estado==='Rechazado') return '<span class="pill pill-red">Rechazado</span>';
+  return '<span class="pill pill-amber">Pendiente</span>';
+}
+function abrirMarcacion(){
+  const activos = DB.empleados.filter(e=>e.estado==='Activo');
+  const body = `
+    <div class="field"><label>Colaborador</label><select id="mk_emp">${activos.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</select></div>
+    <div class="field"><label>Tipo de marcación</label><select id="mk_tipo"><option>Entrada</option><option>Salida</option></select></div>
+    <p style="font-size:12.5px; color:var(--muted);">Se registrará la hora actual del sistema (simulada).</p>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="registrarMarcacion()">Registrar ahora</button>`;
+  openModal('Registrar marcación', body, foot);
+}
+function registrarMarcacion(){
+  const empId = $('#mk_emp').value, tipo = $('#mk_tipo').value;
+  const horaSim = tipo==='Entrada' ? '08:0'+Math.floor(Math.random()*9) : '17:0'+Math.floor(Math.random()*9);
+  let rec = DB.attendance.find(a=>a.empId===empId && a.fecha===DEMO_TODAY);
+  if(!rec){ rec = {id:uid('att'), empId, fecha:DEMO_TODAY, entrada:null, salida:null, estado:'A tiempo', metodo:'Manual', marcas:[]}; DB.attendance.push(rec); }
+  if(!rec.marcas) rec.marcas = marcasDeRegistro(rec);
+  rec.marcas.push({hora:horaSim, tipo});
+  rec.metodo = 'Manual';
+  if(tipo==='Entrada'){ if(!rec.entrada){ rec.entrada=horaSim; rec.estado = horaSim > '08:05' ? 'Tarde' : 'A tiempo'; } }
+  else { rec.salida=horaSim; }
+  rec.horasDia = Math.round(horasDeRegistro(rec).horas*100)/100;
+  sbRegistrarMarcacion(rec);
+  const e = emp(empId); if(e) verificarAlertaHoras(e);
+  closeModal(); toast('Marcación registrada'); renderApp();
+}
+function abrirTurno(){
+  const body = `
+    <div class="field"><label>Nombre del turno</label><input id="tn_nombre" placeholder="Ej. Turno tarde"></div>
+    <div class="field-row"><div class="field"><label>Hora inicio</label><input type="time" id="tn_inicio" value="08:00"></div>
+      <div class="field"><label>Hora fin</label><input type="time" id="tn_fin" value="17:00"></div></div>
+    <div class="field"><label>Días</label><input id="tn_dias" value="Lun–Vie"></div>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarTurno()">Guardar turno</button>`;
+  openModal('Nuevo turno', body, foot);
+}
+function guardarTurno(){
+  const nombre=$('#tn_nombre').value.trim(); if(!nombre){ toast('Escribe un nombre para el turno'); return; }
+  DB.shifts.push({id:uid('shift'), nombre, inicio:$('#tn_inicio').value, fin:$('#tn_fin').value, dias:$('#tn_dias').value});
+  closeModal(); toast('Turno creado'); renderApp();
+}
+function abrirPermiso(){
+  const activos = DB.empleados.filter(e=>e.estado==='Activo');
+  const body = `
+    <div class="field"><label>Colaborador</label><select id="pm_emp">${activos.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</select></div>
+    <div class="field"><label>Tipo</label><select id="pm_tipo">${['Vacaciones','Permiso remunerado','Permiso no remunerado','Incapacidad','Licencia de maternidad/paternidad'].map(o=>`<option>${o}</option>`).join('')}</select></div>
+    <div class="field-row"><div class="field"><label>Fecha inicio</label><input type="date" id="pm_ini" value="2026-09-20"></div>
+      <div class="field"><label>Fecha fin</label><input type="date" id="pm_fin" value="2026-09-21"></div></div>
+    <div class="field"><label>Motivo</label><textarea id="pm_motivo" placeholder="Describe brevemente el motivo…"></textarea></div>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="crearPermiso()">Enviar solicitud</button>`;
+  openModal('Nueva solicitud de permiso o vacaciones', body, foot);
+}
+function crearPermiso(){
+  const ini=$('#pm_ini').value, fin=$('#pm_fin').value;
+  const dias = Math.max(1, Math.round((new Date(fin)-new Date(ini))/86400000)+1);
+  const nueva = {id:uid('leave'), empId:$('#pm_emp').value, tipo:$('#pm_tipo').value, inicio:ini, fin, dias, motivo:$('#pm_motivo').value.trim()||'—', estado:'Pendiente'};
+  DB.leaveRequests.push(nueva);
+  sbGuardarSolicitud(nueva);
+  closeModal(); toast('Solicitud enviada'); renderApp();
+}
+function resolverPermiso(id, estado){
+  const l = DB.leaveRequests.find(x=>x.id===id); l.estado=estado;
+  sbActualizarSolicitud(id, estado);
+  if(estado==='Aprobado' && l.tipo==='Vacaciones'){
+    openModal('', `<div style="text-align:center; padding:10px 0;">
+        <div style="width:64px; height:64px; border-radius:50%; background:var(--success); color:#fff; display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 14px;">✓</div>
+        <h3 style="font-size:19px; margin-bottom:8px;">¡Vacaciones aprobadas!</h3>
+        <p style="color:var(--muted); font-size:13px;">${emp(l.empId).nombre} descansará del ${fmtDate(l.inicio)} al ${fmtDate(l.fin)}. ¡Descansa y disfruta, nos vemos pronto!</p>
+      </div>`, `<button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="closeModal(); renderApp();">Entendido</button>`);
+  } else { toast(estado==='Aprobado'? 'Solicitud aprobada':'Solicitud rechazada'); renderApp(); }
+}
+
+/* =========================================================
+   14. REPORTES — CÁLCULO DE HORAS LABORADAS Y EXPORTADORES
+   A partir de las marcaciones de entrada/salida de cada
+   colaborador (que admiten varios ciclos por día — ver
+   marcasDeRegistro/horasDeRegistro más arriba), esta sección
+   calcula las horas efectivamente laboradas por día, semana,
+   mes o año, y permite exportar el resultado a Excel (.xlsx)
+   o PDF, además de las plantillas CSV clásicas.
+   ========================================================= */
+const PLANTILLAS = ['Colaboradores','Asistencia','Vacaciones'];
+
+function inicioMesISO(fechaISO){ return fechaISO.slice(0,7)+'-01'; }
+function finMesISO(fechaISO){ const d=new Date(fechaISO.slice(0,7)+'-01T00:00:00'); d.setMonth(d.getMonth()+1); d.setDate(0); return d.toISOString().slice(0,10); }
+function inicioAnioISO(fechaISO){ return fechaISO.slice(0,4)+'-01-01'; }
+function finAnioISO(fechaISO){ return fechaISO.slice(0,4)+'-12-31'; }
+function rangoPeriodo(periodo, fechaRef){
+  if(periodo==='dia') return {ini:fechaRef, fin:fechaRef};
+  if(periodo==='semana'){ const ini=inicioSemanaISO(fechaRef); return {ini, fin:finSemanaISO(ini)}; }
+  if(periodo==='mes') return {ini:inicioMesISO(fechaRef), fin:finMesISO(fechaRef)};
+  return {ini:inicioAnioISO(fechaRef), fin:finAnioISO(fechaRef)}; // 'anio'
+}
+function etiquetaPeriodo(periodo, fechaRef){
+  const {ini,fin} = rangoPeriodo(periodo, fechaRef);
+  if(periodo==='dia') return fmtDate(fechaRef);
+  if(periodo==='anio') return 'Año '+fechaRef.slice(0,4);
+  return `${fmtDate(ini)} – ${fmtDate(fin)}`;
+}
+function registrosEnRango(empId, ini, fin){
+  return DB.attendance.filter(a=>a.empId===empId && a.fecha>=ini && a.fecha<=fin).slice().sort((a,b)=>a.fecha.localeCompare(b.fecha));
+}
+function tablaHorasPorPeriodo(){
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  const {ini,fin} = rangoPeriodo(periodo, fecha);
+  const base = state.reportEmpFiltro==='todos'? DB.empleados.filter(e=>e.estado==='Activo') : DB.empleados.filter(e=>e.id===state.reportEmpFiltro);
+  return base.map(e=>{
+    const regs = registrosEnRango(e.id, ini, fin);
+    const horas = regs.reduce((s,a)=> s + horasDeRegistro(a).horas, 0);
+    const dias = regs.filter(a=> horasDeRegistro(a).horas>0).length;
+    return { emp:e, horas, dias, regs };
+  }).sort((a,b)=> a.emp.nombre.localeCompare(b.emp.nombre));
+}
+function usuarioReporte(){
+  const you = emp(state.currentEmp);
+  return you? you.nombre : (DB.empleados[0]? DB.empleados[0].nombre : 'Administrador');
+}
+
+function renderReportes(){
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  const filas = tablaHorasPorPeriodo();
+  const totalHoras = filas.reduce((s,f)=>s+f.horas,0);
+  return `
+  <div class="card card-pad" style="margin-bottom:18px;">
+    <div class="section-title"><h2>Cálculo de horas laboradas</h2><span class="hint">Calculado a partir de las entradas y salidas — admite varios ciclos por día</span></div>
+    <div class="field-row" style="align-items:flex-end; flex-wrap:wrap;">
+      <div class="field" style="max-width:190px;">
+        <label>Calcular por</label>
+        <select onchange="state.reportPeriodo=this.value; renderApp();">
+          ${[['dia','Día'],['semana','Semana'],['mes','Mes'],['anio','Año']].map(([v,l])=>`<option value="${v}" ${periodo===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" style="max-width:190px;">
+        <label>Fecha de referencia</label>
+        <input type="date" value="${fecha}" onchange="state.reportFecha=this.value; renderApp();">
+      </div>
+      <div class="field" style="max-width:240px;">
+        <label>Colaborador</label>
+        <select onchange="state.reportEmpFiltro=this.value; renderApp();">
+          <option value="todos" ${state.reportEmpFiltro==='todos'?'selected':''}>Todos los colaboradores</option>
+          ${DB.empleados.map(e=>`<option value="${e.id}" ${state.reportEmpFiltro===e.id?'selected':''}>${e.nombre}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" style="flex:0 0 auto; margin-bottom:13px;">
+        <button class="btn btn-accent" onclick="exportarHorasExcel()">📊 Exportar Excel</button>
+      </div>
+      <div class="field" style="flex:0 0 auto; margin-bottom:13px;">
+        <button class="btn btn-primary" onclick="exportarHorasPDF()">📄 Exportar PDF</button>
+      </div>
+    </div>
+    <p class="hint" style="margin:-4px 0 14px;">Período: <strong>${etiquetaPeriodo(periodo, fecha)}</strong> · Total horas laboradas: <strong>${totalHoras.toFixed(1)}h</strong></p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Colaborador</th><th>Área</th><th class="num-cell">Días con marcación</th><th class="num-cell">Horas laboradas</th><th></th></tr></thead>
+      <tbody>
+        ${filas.map(f=>`<tr>
+          <td>${personCell(f.emp.id)}</td>
+          <td>${f.emp.area}</td>
+          <td class="num-cell">${f.dias}</td>
+          <td class="num-cell"><strong>${f.horas.toFixed(1)}h</strong></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="verHorasDetalle('${f.emp.id}')">Ver detalle</button></td>
+        </tr>`).join('')}
+        ${!filas.length? `<tr><td colspan="5">${emptyState('Sin datos','No hay colaboradores o marcaciones para este período.')}</td></tr>`:''}
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 260px; gap:18px; align-items:start;">
+    <div>
+      <div class="section-title"><h2>Exportadores generados</h2><span class="hint">${DB.reports.length} reportes</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>Usuario</th><th>Fecha de creación</th><th></th></tr></thead><tbody>
+        ${[...DB.reports].reverse().map(r=>`<tr><td>${r.nombre}</td><td><span class="pill pill-blue">${r.tipo}</span></td><td>${r.usuario}</td><td>${fmtDateTime(r.fecha)}</td><td><button class="icon-btn" onclick="eliminarReporte('${r.id}')">🗑️</button></td></tr>`).join('')}
+        ${!DB.reports.length? `<tr><td colspan="5">${emptyState('Sin reportes','Genera tu primer reporte desde el cálculo de horas o las plantillas.')}</td></tr>`:''}
+      </tbody></table></div>
+    </div>
+    <div class="card card-pad">
+      <h3 style="font-size:13px; margin-bottom:10px;">Plantillas CSV</h3>
+      <div style="display:flex; flex-direction:column; gap:7px;">
+        ${PLANTILLAS.map(p=>`<button class="btn btn-ghost" style="justify-content:flex-start;" onclick="generarPlantilla('${p}')">${p}</button>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function verHorasDetalle(empId){
+  const e = emp(empId);
+  const {ini,fin} = rangoPeriodo(state.reportPeriodo, state.reportFecha);
+  const regs = registrosEnRango(empId, ini, fin);
+  const total = regs.reduce((s,a)=>s+horasDeRegistro(a).horas,0);
+  const body = `
+    <p class="hint" style="margin-bottom:12px;">Período: ${etiquetaPeriodo(state.reportPeriodo, state.reportFecha)}</p>
+    <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Marcaciones</th><th class="num-cell">Horas</th></tr></thead><tbody>
+      ${regs.map(a=>`<tr><td>${fmtDate(a.fecha)}</td><td>${marcasDeRegistro(a).map(m=>`${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}`).join(' · ')||'—'}</td><td class="num-cell">${horasDeRegistro(a).horas.toFixed(1)}h</td></tr>`).join('')}
+      ${!regs.length? `<tr><td colspan="3">${emptyState('Sin marcaciones','No hay registros en este período.')}</td></tr>`:''}
+    </tbody></table></div>
+    <p style="margin-top:12px; font-weight:700;">Total: ${total.toFixed(1)}h</p>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`;
+  openModal('Detalle de horas — '+e.nombre, body, foot, true);
+}
+
+/* ---- Exportación a Excel (.xlsx) y PDF de las horas laboradas ---- */
+function exportarHorasExcel(){
+  const filas = tablaHorasPorPeriodo();
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  if(!filas.length){ toast('No hay datos para exportar en este período'); return; }
+  if(!window.XLSX){ toast('No se pudo cargar el módulo de Excel, intenta de nuevo'); return; }
+  const data = filas.map(f=>({ 'Colaborador':f.emp.nombre, 'Cédula':f.emp.cedula, 'Área':f.emp.area,
+    'Cargo':f.emp.cargo, 'Días con marcación':f.dias, 'Horas laboradas':Math.round(f.horas*100)/100 }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{wch:26},{wch:16},{wch:18},{wch:20},{wch:16},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Horas laboradas');
+  XLSX.writeFile(wb, `horas_${periodo}_${fecha}.xlsx`);
+  DB.reports.push({id:uid('rep'), nombre:'Horas laboradas ('+etiquetaPeriodo(periodo,fecha)+')', tipo:'Excel', usuario:usuarioReporte(), fecha:new Date().toISOString()});
+  toast('Excel descargado'); if(state.view==='reportes') renderApp();
+}
+function exportarHorasPDF(){
+  const filas = tablaHorasPorPeriodo();
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  if(!filas.length){ toast('No hay datos para exportar en este período'); return; }
+  const JsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+  if(!JsPDFCtor){ toast('No se pudo cargar el módulo de PDF, intenta de nuevo'); return; }
+  const doc = new JsPDFCtor({ orientation:'portrait', unit:'pt' });
+  doc.setFontSize(14); doc.setTextColor(30,58,117);
+  doc.text(CFG.companyName||'Bitácora', 40, 42);
+  doc.setFontSize(11); doc.setTextColor(90,90,90);
+  doc.text('Horas laboradas — '+etiquetaPeriodo(periodo,fecha), 40, 60);
+  const total = filas.reduce((s,f)=>s+f.horas,0);
+  doc.text('Total del período: '+total.toFixed(1)+' h', 40, 76);
+  doc.autoTable({
+    startY: 92,
+    head: [['Colaborador','Cédula','Área','Días con marcación','Horas laboradas']],
+    body: filas.map(f=>[f.emp.nombre, f.emp.cedula, f.emp.area, String(f.dias), f.horas.toFixed(1)+'h']),
+    headStyles:{ fillColor:[30,58,117] }, styles:{ fontSize:9 },
+  });
+  doc.save(`horas_${periodo}_${fecha}.pdf`);
+  DB.reports.push({id:uid('rep'), nombre:'Horas laboradas ('+etiquetaPeriodo(periodo,fecha)+')', tipo:'PDF', usuario:usuarioReporte(), fecha:new Date().toISOString()});
+  toast('PDF descargado'); if(state.view==='reportes') renderApp();
+}
+
+function eliminarReporte(id){ const i=DB.reports.findIndex(r=>r.id===id); if(i>-1) DB.reports.splice(i,1); renderApp(); }
+function generarPlantilla(tipo){
+  let headers=[], rows=[];
+  if(tipo==='Colaboradores'){ headers=['Nombre','Cédula','Cargo','Área','Contrato','Salario','Estado']; rows=DB.empleados.map(e=>[e.nombre,e.cedula,e.cargo,e.area,e.contrato,e.salario,e.estado]); }
+  else if(tipo==='Asistencia'){ headers=['Colaborador','Fecha','Marcaciones','Horas','Estado']; rows=DB.attendance.map(a=>[emp(a.empId)?emp(a.empId).nombre:'—', a.fecha, marcasDeRegistro(a).map(m=>`${m.tipo} ${m.hora}`).join(' | '), Math.round(horasDeRegistro(a).horas*100)/100, a.estado]); }
+  else if(tipo==='Vacaciones'){ headers=['Colaborador','Tipo','Inicio','Fin','Días','Estado']; rows=DB.leaveRequests.map(l=>[emp(l.empId)?emp(l.empId).nombre:'—', l.tipo, l.inicio, l.fin, l.dias, l.estado]); }
+  const filename = tipo.toLowerCase().replace(/\s+/g,'_')+'_'+DEMO_TODAY+'.csv';
+  exportCSV(filename, headers, rows);
+  DB.reports.push({id:uid('rep'), nombre:tipo+' — '+fmtDate(DEMO_TODAY), tipo:'Exportado', usuario:usuarioReporte(), fecha:new Date().toISOString()});
+  toast('Reporte descargado'); if(state.view==='reportes') renderApp();
+}
+
+/* =========================================================
+   NAVEGACIÓN ENTRE MODOS
+   (Panel administrador / Portal del colaborador / Kiosco de
+   marcación) — antes eran 3 archivos separados; ahora conviven
+   en esta misma página y se conmutan sin recargar.
+   ========================================================= */
+function ocultarTodosLosRoots(){
+  ['rootAdmin','rootPortal','rootKiosco','rootModeSelect'].forEach(id=>{ const el=$('#'+id); if(el) el.classList.add('hidden'); });
+}
+function mostrarSelector(){ ocultarTodosLosRoots(); $('#rootModeSelect').classList.remove('hidden'); location.hash=''; renderModeSelect(); }
+function mostrarAdmin(){ ocultarTodosLosRoots(); $('#rootAdmin').classList.remove('hidden'); location.hash='admin'; renderApp(); verificarTodasLasAlertasHoras(); }
+function mostrarPortal(){ ocultarTodosLosRoots(); $('#rootPortal').classList.remove('hidden'); location.hash='colaborador'; portalState = {view:'login', empId:null}; renderPortal(); }
+function mostrarKiosco(){ ocultarTodosLosRoots(); $('#rootKiosco').classList.remove('hidden'); location.hash='kiosco'; renderKiosco(); }
+function renderModeSelect(){
+  $('#rootModeSelect').innerHTML = `
+    <div class="mode-select-screen">
+      <div class="mode-select-card">
+        <div class="brandbig">${iniciales(CFG.companyName||'Bitácora')}</div>
+        <h2 style="margin-bottom:4px;">${CFG.companyName||'Bitácora'}</h2>
+        <p class="muted" style="font-size:12.5px; margin-bottom:6px;">Bitácora · Gestión de Talento Humano — elige cómo quieres entrar</p>
+        <div class="mode-opt" onclick="mostrarAdmin()"><div class="ico">🗂️</div><div><div class="t">Panel del administrador</div><div class="s">Nómina, colaboradores, asistencia y todos los módulos de RRHH</div></div></div>
+        <div class="mode-opt" onclick="mostrarPortal()"><div class="ico">👤</div><div><div class="t">Portal del colaborador</div><div class="s">Consulta tu perfil, tu asistencia y envía solicitudes con tu cédula</div></div></div>
+        <div class="mode-opt" onclick="mostrarKiosco()"><div class="ico">📡</div><div><div class="t">Kiosco de marcación</div><div class="s">Marcar entrada o salida por huella, NFC o de forma manual</div></div></div>
+      </div>
+    </div>`;
+}
+
+/* =========================================================
+   PORTAL DEL COLABORADOR
+   Autoservicio por número de cédula, sin contraseña: perfil,
+   resumen del mes, historial de marcaciones y solicitudes de
+   permiso/vacaciones (comparte DB.leaveRequests con el admin).
+   ========================================================= */
+let portalState = { view:'login', empId:null };
+function renderPortal(){
+  const root = $('#rootPortal');
+  const e = portalState.empId? emp(portalState.empId) : null;
+  if(portalState.view!=='perfil' || !e){ root.innerHTML = portalLoginHtml(); return; }
+  root.innerHTML = portalPerfilHtml(e);
+}
+function portalLoginHtml(){
+  return `
+  <div class="wrap">
+    <button class="back-link" onclick="mostrarSelector()">← Volver</button>
+    <div class="topbrand"><div class="mark">${iniciales(CFG.companyName||'B')}</div><div><div class="name">${CFG.companyName||'Bitácora'}</div><div class="sub">Portal del colaborador</div></div></div>
+    <div class="card card-pad" style="max-width:420px;">
+      <div class="field"><label>Número de cédula</label><input id="portal_cedula" placeholder="Ej. 1.020.455.332" onkeydown="if(event.key==='Enter') portalIngresar();"></div>
+      <button class="btn btn-primary btn-block" onclick="portalIngresar()">Ingresar</button>
+      <p class="hint" style="margin-top:10px;">Escribe el mismo número de cédula que aparece en tu perfil, sin necesidad de contraseña.</p>
+    </div>
+  </div>`;
+}
+function portalIngresar(){
+  const ced = ($('#portal_cedula').value||'').trim();
+  if(!ced){ toast('Escribe tu número de cédula'); return; }
+  const e = DB.empleados.find(x=>x.cedula && x.cedula.replace(/\D/g,'')===ced.replace(/\D/g,''));
+  if(!e){ toast('No encontramos un colaborador con esa cédula'); return; }
+  if(e.estado!=='Activo'){ toast('Este colaborador no tiene un contrato activo'); return; }
+  portalState = {view:'perfil', empId:e.id}; renderPortal();
+}
+function portalSalir(){ portalState = {view:'login', empId:null}; renderPortal(); }
+function portalPerfilHtml(e){
+  const r = resumenMensual(e.id);
+  const misMarcaciones = DB.attendance.filter(a=>a.empId===e.id).slice().sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,15);
+  const misSolicitudes = DB.leaveRequests.filter(l=>l.empId===e.id).slice().sort((a,b)=>(b.inicio||'').localeCompare(a.inicio||''));
+  return `
+  <div class="wrap">
+    <button class="back-link" onclick="portalSalir()">← Cambiar de colaborador</button>
+    <div class="topbrand"><div class="mark">${iniciales(e.nombre)}</div><div><div class="name">${e.nombre}</div><div class="sub">${e.cargo} · ${e.area}</div></div></div>
+
+    <div class="grid-4" style="margin-bottom:18px;">
+      <div class="card stat"><div class="num">${r.asistencias}</div><div class="lbl">Asistencias (mes)</div></div>
+      <div class="card stat"><div class="num">${r.atrasos}</div><div class="lbl">Atrasos</div></div>
+      <div class="card stat"><div class="num">${r.inasistencias}</div><div class="lbl">Ausencias</div></div>
+      <div class="card stat"><div class="num">${e.puntos}</div><div class="lbl">Puntos</div></div>
+    </div>
+    <p style="font-size:12.5px; color:var(--muted); margin:-10px 0 18px;">Horas trabajadas esta semana: <strong>${horasSemanaEmpleado(e.id, DEMO_TODAY).toFixed(1)}h</strong> de un máximo legal de ${CFG.horasSemanalesMax||42}h (Ley 2101 de 2021).</p>
+
+    <div class="section-title"><h2>Mi perfil</h2></div>
+    <div class="table-wrap card" style="margin-bottom:20px;"><table><tbody>
+      <tr><td style="font-weight:600; width:40%;">Cédula</td><td>${e.cedula}</td></tr>
+      <tr><td style="font-weight:600;">Contrato</td><td>${e.contrato}</td></tr>
+      <tr><td style="font-weight:600;">Fecha de ingreso</td><td>${fmtDate(e.ingreso)}</td></tr>
+      <tr><td style="font-weight:600;">Supervisor</td><td>${e.supervisor||'—'}</td></tr>
+      <tr><td style="font-weight:600;">Correo</td><td>${e.email||'—'}</td></tr>
+      <tr><td style="font-weight:600;">Teléfono</td><td>${e.tel||'—'}</td></tr>
+      <tr><td style="font-weight:600;">Huella biométrica</td><td>${e.huella? '<span class="pill pill-green">Registrada</span>' : '<span class="pill pill-gray">No registrada — puedes registrarla en el kiosco</span>'}</td></tr>
+    </tbody></table></div>
+
+    <div class="section-title"><h2>Mis marcaciones</h2><span class="hint">Últimos registros</span></div>
+    <div class="table-wrap card" style="margin-bottom:20px;"><table>
+      <thead><tr><th>Fecha</th><th>Marcaciones</th><th>Horas</th><th>Estado</th><th>Método</th></tr></thead>
+      <tbody>${misMarcaciones.length? misMarcaciones.map(a=>`<tr><td>${fmtDate(a.fecha)}</td><td>${marcasDeRegistro(a).map(m=>`${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}`).join(' · ')||'—'}</td><td>${horasDeRegistro(a).horas.toFixed(1)}h</td><td>${a.estado}</td><td>${a.metodo||'Manual'}</td></tr>`).join('') : `<tr><td colspan="5">${emptyState('Sin marcaciones','Aún no tienes marcaciones registradas.')}</td></tr>`}</tbody>
+    </table></div>
+
+    <div class="section-title"><h2>Mis solicitudes</h2><button class="btn btn-primary" onclick="portalAbrirSolicitud()">+ Nueva solicitud</button></div>
+    <div class="table-wrap card"><table>
+      <thead><tr><th>Tipo</th><th>Inicio</th><th>Fin</th><th>Motivo</th><th>Estado</th></tr></thead>
+      <tbody>${misSolicitudes.length? misSolicitudes.map(l=>`<tr><td>${l.tipo}</td><td>${fmtDate(l.inicio)}</td><td>${fmtDate(l.fin)}</td><td>${l.motivo}</td><td>${pillPermiso(l.estado)}</td></tr>`).join('') : `<tr><td colspan="5">${emptyState('Sin solicitudes','Aún no has enviado solicitudes de permiso o vacaciones.')}</td></tr>`}</tbody>
+    </table></div>
+  </div>`;
+}
+function portalAbrirSolicitud(){
+  const body = `
+    <div class="field"><label>Tipo</label><select id="ps_tipo">${['Vacaciones','Permiso remunerado','Permiso no remunerado','Incapacidad','Licencia de maternidad/paternidad'].map(o=>`<option>${o}</option>`).join('')}</select></div>
+    <div class="field-row"><div class="field"><label>Fecha inicio</label><input type="date" id="ps_ini" value="${DEMO_TODAY}"></div>
+      <div class="field"><label>Fecha fin</label><input type="date" id="ps_fin" value="${DEMO_TODAY}"></div></div>
+    <div class="field"><label>Motivo</label><textarea id="ps_motivo" placeholder="Describe brevemente el motivo…"></textarea></div>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="portalEnviarSolicitud()">Enviar solicitud</button>`;
+  openModal('Nueva solicitud de permiso o vacaciones', body, foot);
+}
+function portalEnviarSolicitud(){
+  const ini=$('#ps_ini').value, fin=$('#ps_fin').value;
+  const dias = Math.max(1, Math.round((new Date(fin)-new Date(ini))/86400000)+1);
+  const nueva = {id:uid('leave'), empId:portalState.empId, tipo:$('#ps_tipo').value, inicio:ini, fin, dias, motivo:$('#ps_motivo').value.trim()||'—', estado:'Pendiente'};
+  DB.leaveRequests.push(nueva);
+  sbGuardarSolicitud(nueva);
+  closeModal(); toast('Solicitud enviada, queda pendiente de aprobación'); renderPortal();
+}
+
+/* =========================================================
+   KIOSCO DE MARCACIÓN
+   Tres modos: Huella (WebAuthn del propio dispositivo), NFC
+   (Web NFC API, solo Chrome/Android sobre HTTPS) y Manual.
+   ========================================================= */
+let kioscoState = { modo:'manual' };
+let _kioskClockTimer = null;
+function renderKiosco(){
+  const root = $('#rootKiosco');
+  root.innerHTML = `
+  <div class="wrap">
+    <button class="back-link" onclick="mostrarSelector()">← Volver</button>
+    <div class="topbrand"><div class="mark">${iniciales(CFG.companyName||'B')}</div><div><div class="name">${CFG.companyName||'Bitácora'}</div><div class="sub">Kiosco de marcación</div></div></div>
+    <div class="kiosk-clock" id="kioskClock">--:--:--</div>
+    <div class="kiosk-date" id="kioskDate"></div>
+    <div class="mode-tabs">
+      <button class="${kioscoState.modo==='huella'?'active':''}" onclick="kioscoModo('huella')">🖐️ Huella</button>
+      <button class="${kioscoState.modo==='nfc'?'active':''}" onclick="kioscoModo('nfc')">📶 NFC</button>
+      <button class="${kioscoState.modo==='manual'?'active':''}" onclick="kioscoModo('manual')">⌨️ Manual</button>
+    </div>
+    <div id="kioskStatus" class="kiosk-status idle">Selecciona un modo de marcación para comenzar.</div>
+    <div id="kioskBody" style="margin-top:16px;"></div>
+  </div>`;
+  actualizarReloj();
+  if(!_kioskClockTimer) _kioskClockTimer = setInterval(actualizarReloj, 1000);
+  renderKioscoBody();
+}
+function actualizarReloj(){
+  const el = $('#kioskClock'); if(!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const dEl = $('#kioskDate'); if(dEl) dEl.textContent = now.toLocaleDateString('es-CO',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+}
+function kioscoModo(m){
+  if(_nfcScanController){ _nfcScanController.abort(); _nfcScanController = null; } // deja de escuchar NFC al cambiar de modo
+  kioscoState.modo=m; renderKiosco();
+}
+function kioscoSetStatus(tipo, msg){ const el=$('#kioskStatus'); if(el){ el.className='kiosk-status '+tipo; el.textContent=msg; } }
+function renderKioscoBody(){
+  const el = $('#kioskBody'); if(!el) return;
+  if(kioscoState.modo==='manual'){
+    el.innerHTML = `
+      <div class="card card-pad">
+        <div class="field"><label>Número de cédula</label><input id="kk_cedula" placeholder="Escribe tu cédula" onkeydown="if(event.key==='Enter') kioscoMarcarManual();"></div>
+        <button class="btn btn-primary btn-block" onclick="kioscoMarcarManual()">Marcar entrada / salida</button>
+      </div>`;
+  } else if(kioscoState.modo==='nfc'){
+    const soportado = 'NDEFReader' in window;
+    el.innerHTML = `
+      <div class="card card-pad">
+        <p class="hint" style="margin-bottom:12px;">Acerca la tarjeta o llavero NFC del colaborador al lector del dispositivo. Requiere Chrome para Android sobre HTTPS.</p>
+        <button id="kk_nfc_btn" class="btn btn-primary btn-block" ${soportado?'':'disabled'} onclick="kioscoEscanearNFC()">📶 Escanear tarjeta NFC</button>
+        ${soportado? '' : '<p class="hint" style="margin-top:8px; color:var(--danger);">Web NFC no está disponible en este navegador/dispositivo.</p>'}
+      </div>`;
+  } else if(kioscoState.modo==='huella'){
+    const soportado = !!window.PublicKeyCredential;
+    el.innerHTML = `
+      <div class="card card-pad">
+        <p class="hint" style="margin-bottom:12px;">Usa el sensor biométrico, Face ID o Windows Hello de este equipo. Primero registra la huella de cada colaborador una vez en él.</p>
+        <div class="field"><label>Cédula (para registrar huella)</label><input id="kk_cedula_h" placeholder="Cédula del colaborador"></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-ghost" ${soportado?'':'disabled'} onclick="kioscoRegistrarHuella()">Registrar huella</button>
+          <button class="btn btn-primary" ${soportado?'':'disabled'} onclick="kioscoMarcarHuella()">Marcar con huella</button>
+        </div>
+        ${soportado? '' : '<p class="hint" style="margin-top:8px; color:var(--danger);">Este navegador no soporta WebAuthn.</p>'}
+      </div>`;
+  }
+}
+function kioscoBuscarPorCedula(ced){
+  return DB.empleados.find(x=>x.cedula && x.cedula.replace(/\D/g,'')===String(ced).replace(/\D/g,'') && x.estado==='Activo');
+}
+function kioscoRegistrarMarcacion(e, metodo){
+  const now = new Date();
+  const hora = now.toTimeString().slice(0,5);
+  let rec = DB.attendance.find(a=>a.empId===e.id && a.fecha===DEMO_TODAY);
+  if(!rec){ rec = {id:uid('att'), empId:e.id, fecha:DEMO_TODAY, entrada:null, salida:null, estado:'A tiempo', metodo, marcas:[]}; DB.attendance.push(rec); }
+  if(!rec.marcas) rec.marcas = marcasDeRegistro(rec);
+  /* Permite varios ciclos de entrada/salida en el mismo día: se alterna según
+     cuál fue la última marcación registrada (si la última fue "Salida" o no
+     hay ninguna, la siguiente es "Entrada"; si estaba abierta, es "Salida"). */
+  const ultima = rec.marcas[rec.marcas.length-1];
+  const tipo = (!ultima || ultima.tipo==='Salida') ? 'Entrada' : 'Salida';
+  rec.marcas.push({hora, tipo});
+  rec.metodo = metodo;
+  if(tipo==='Entrada'){
+    if(!rec.entrada){ rec.entrada = hora; rec.estado = hora > '08:05' ? 'Tarde' : 'A tiempo'; }
+  } else {
+    rec.salida = hora; // guarda la última salida del día para compatibilidad
+  }
+  rec.horasDia = Math.round(horasDeRegistro(rec).horas*100)/100;
+  sbRegistrarMarcacion(rec);
+  kioscoSetStatus('ok', `${tipo} registrada — ${e.nombre} (${hora}) · ${rec.horasDia}h trabajadas hoy`);
+  verificarAlertaHoras(e);
+  return tipo;
+}
+function kioscoMarcarManual(){
+  const ced = ($('#kk_cedula').value||'').trim();
+  if(!ced){ kioscoSetStatus('err','Escribe un número de cédula.'); return; }
+  const e = kioscoBuscarPorCedula(ced);
+  if(!e){ kioscoSetStatus('err','No se encontró un colaborador activo con esa cédula.'); return; }
+  kioscoRegistrarMarcacion(e, 'Manual');
+  const i=$('#kk_cedula'); if(i) i.value='';
+}
+/* Igual que con la asignación de tag: solo puede haber una sesión de escaneo
+   NFC activa a la vez. Si se vuelve a presionar "Escanear tarjeta NFC" (o se
+   cambia de pestaña y se regresa) sin haber cancelado la sesión anterior,
+   Chrome puede dejar dos escuchas activas y un mismo toque de tarjeta
+   terminaría registrando entrada y salida al mismo tiempo. */
+let _nfcScanController = null;
+let _kioscoUltimaMarcacion = {}; // empId -> timestamp ms, evita registrar dos veces la misma lectura
+async function kioscoEscanearNFC(){
+  if(!('NDEFReader' in window)){ kioscoSetStatus('err','Web NFC no disponible en este dispositivo/navegador.'); return; }
+  if(_nfcScanController){ _nfcScanController.abort(); _nfcScanController = null; }
+  const controller = new AbortController();
+  _nfcScanController = controller;
+  const btn = $('#kk_nfc_btn');
+  try{
+    const reader = new NDEFReader();
+    await reader.scan({ signal: controller.signal });
+    kioscoSetStatus('idle','Acerca la tarjeta al lector…');
+    if(btn){ btn.disabled = true; btn.textContent = '📶 Escuchando… acerca la tarjeta'; }
+    reader.onreading = (event)=>{
+      let cedula = '';
+      for(const record of event.message.records){
+        if(record.recordType==='text'){ cedula = new TextDecoder(record.encoding||'utf-8').decode(record.data); break; }
+      }
+      if(!cedula) cedula = event.serialNumber||'';
+      const e = kioscoBuscarPorCedula(cedula);
+      if(!e){ kioscoSetStatus('err','Tarjeta no reconocida — verifica que tenga grabada la cédula del colaborador.'); return; }
+      const ahora = Date.now();
+      if(ahora - (_kioscoUltimaMarcacion[e.id]||0) < 4000) return; // ignora lecturas repetidas del mismo toque
+      _kioscoUltimaMarcacion[e.id] = ahora;
+      const tipo = kioscoRegistrarMarcacion(e, 'NFC');
+      if(tipo) mostrarCheckExito(`${tipo} registrada — ${e.nombre}`);
+    };
+    reader.onreadingerror = ()=> kioscoSetStatus('err','No se pudo leer la tarjeta, intenta de nuevo.');
+  } catch(err){
+    if(_nfcScanController===controller) _nfcScanController = null;
+    if(btn){ btn.disabled=false; btn.textContent='📶 Escanear tarjeta NFC'; }
+    if(err.name==='AbortError'){ /* cancelada a propósito por un nuevo intento, no es un error real */ }
+    else { kioscoSetStatus('err','No se pudo activar el lector NFC: '+err.message); }
+  }
+}
+function b64uToBuf(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; const bin=atob(s); const buf=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i); return buf.buffer; }
+function bufToB64u(buf){ let bin=''; new Uint8Array(buf).forEach(b=>bin+=String.fromCharCode(b)); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+async function kioscoRegistrarHuella(){
+  if(!window.PublicKeyCredential){ kioscoSetStatus('err','Este navegador no soporta WebAuthn.'); return; }
+  const ced = ($('#kk_cedula_h').value||'').trim();
+  const e = kioscoBuscarPorCedula(ced);
+  if(!e){ kioscoSetStatus('err','No se encontró un colaborador activo con esa cédula.'); return; }
+  try{
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const cred = await navigator.credentials.create({ publicKey:{
+      challenge, rp:{ name: CFG.companyName||'Bitácora RRHH' },
+      user:{ id: new TextEncoder().encode(e.id), name:e.cedula, displayName:e.nombre },
+      pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+      authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required', residentKey:'required' },
+      timeout:60000,
+    }});
+    const credential_id = bufToB64u(cred.rawId);
+    let public_key = '';
+    try{ if(cred.response.getPublicKey) public_key = bufToB64u(cred.response.getPublicKey()); }catch(_e){}
+    const huella = {credential_id, empleado_id:e.id, public_key, counter:0};
+    DB.huellas.push(huella);
+    e.huella = true;
+    sbGuardarHuella(huella);
+    sbGuardarEmpleado(e);
+    kioscoSetStatus('ok', `Huella registrada para ${e.nombre}.`);
+    const i=$('#kk_cedula_h'); if(i) i.value='';
+  } catch(err){ kioscoSetStatus('err','No se pudo registrar la huella: '+err.message); }
+}
+async function kioscoMarcarHuella(){
+  if(!window.PublicKeyCredential){ kioscoSetStatus('err','Este navegador no soporta WebAuthn.'); return; }
+  try{
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const aser = await navigator.credentials.get({ publicKey:{ challenge, userVerification:'required', timeout:60000 } });
+    const credential_id = bufToB64u(aser.rawId);
+    const h = DB.huellas.find(x=>x.credential_id===credential_id);
+    if(!h){ kioscoSetStatus('err','Huella no registrada en este kiosco.'); return; }
+    const e = emp(h.empleado_id);
+    if(!e){ kioscoSetStatus('err','Colaborador no encontrado.'); return; }
+    kioscoRegistrarMarcacion(e, 'Huella');
+  } catch(err){ kioscoSetStatus('err','No se pudo leer la huella: '+err.message); }
+}
+
+/* =========================================================
+   PWA: instalación y service worker
+   ========================================================= */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault(); deferredPrompt = e;
+  $('#installBtn').hidden=false; $('#installBtnTop').hidden=false;
+});
+function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; $('#installBtn').hidden=true; $('#installBtnTop').hidden=true; });
+}
+window.addEventListener('appinstalled', ()=>{ toast('Bitácora se instaló correctamente'); $('#installBtn').hidden=true; $('#installBtnTop').hidden=true; });
+
+if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').catch((err)=> console.warn('No se pudo registrar el service worker:', err));
+  });
+}
+
+/* =========================================================
+   INICIO
+   ========================================================= */
+function irSegunHash(){
+  const h = location.hash.replace('#','');
+  if(h==='colaborador') mostrarPortal();
+  else if(h==='kiosco') mostrarKiosco();
+  else if(h==='admin') mostrarAdmin();
+  else mostrarSelector();
+}
+async function initApp(){
+  await cargarDesdeSupabase();
+  /* sincroniza el estado de navegación con los datos reales ya cargados,
+     por si los IDs por defecto ya no existen (o todavía no hay ninguno) */
+  if(!DB.empleados.find(e=>e.id===state.currentEmp)) state.currentEmp = DB.empleados[0]? DB.empleados[0].id : null;
+  if(!DB.empleados.find(e=>e.id===state.objEmp)) state.objEmp = DB.empleados[0]? DB.empleados[0].id : null;
+  if(!DB.payrollRuns.find(r=>r.id===state.payrollOpenRun)) state.payrollOpenRun = DB.payrollRuns.length? DB.payrollRuns[DB.payrollRuns.length-1].id : null;
+  irSegunHash();
+}
+window.addEventListener('hashchange', irSegunHash);
+initApp();
+
+/* Revisa cada minuto si algún colaborador activo superó la jornada semanal
+   máxima, mientras el panel de administrador esté abierto (la alarma sonora
+   solo tiene sentido si hay alguien frente a esta pantalla para escucharla). */
+setInterval(()=>{
+  const rootAdmin = $('#rootAdmin');
+  if(rootAdmin && !rootAdmin.classList.contains('hidden')) verificarTodasLasAlertasHoras();
+}, 60000);
 </script>
 </body>
 </html>
