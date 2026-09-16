@@ -94,7 +94,7 @@ ul.navlist button.active{background:var(--primary-3); color:#fff; font-weight:70
 .ticon:hover{background:var(--bg);}
 .ticon .dot{position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:50%; background:var(--danger); border:2px solid #fff;}
 .install-btn{display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#3A2600; border:none; border-radius:9px; padding:8px 13px; font-size:12.5px; font-weight:700; cursor:pointer;}
-.topbar-user{display:flex; align-items:center; gap:8px; padding:5px 10px 5px 5px; border-radius:20px; cursor:pointer; border:1px solid var(--line); background:#fff;}
+.topbar-user{display:flex; align-items:center; gap:8px; padding:5px 10px 5px 5px; border-radius:20px; border:1px solid var(--line); background:#fff;}
 .topbar-user:hover{background:var(--bg);}
 .topbar-user .nm{font-size:12.5px; font-weight:600;}
 .dropdown-panel{position:absolute; top:56px; right:26px; width:320px; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-lg); z-index:50; overflow:hidden;}
@@ -340,6 +340,12 @@ tbody tr:hover{background:#FAFBFD;}
 .mode-opt .ico{width:38px; height:38px; border-radius:10px; background:var(--primary-soft); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:18px; flex:0 0 auto;}
 .mode-opt .t{font-weight:700; font-size:13.5px;}
 .mode-opt .s{font-size:11.5px; color:var(--muted); margin-top:1px;}
+
+/* ---------- Kiosco: botones un poco más grandes (uso táctil) ---------- */
+#rootKiosco .btn{padding:15px 20px; font-size:15px; border-radius:12px;}
+#rootKiosco .mode-tabs button{padding:15px 10px; font-size:14px;}
+#rootKiosco .kiosk-status{font-size:17px; padding:28px;}
+#rootKiosco .field input{padding:13px 14px; font-size:15px;}
 </style>
 </head>
 <body>
@@ -370,11 +376,9 @@ tbody tr:hover{background:#FAFBFD;}
       <div class="topbar-spacer"></div>
       <div class="topbar-icons">
         <button class="ticon" title="Instalar aplicación" id="installBtnTop" hidden onclick="installApp()">⬇</button>
-        <button class="ticon" title="Parámetros" onclick="navigate('parametros')">⚙️</button>
         <button class="ticon" title="Notificaciones" onclick="toggleDropdown('notif')">🔔<span class="dot" id="notifDot" hidden></span></button>
-        <button class="ticon" title="Comunicación" onclick="navigate('comunicacion')">📣<span class="dot" id="commDot" hidden></span></button>
         <button class="ticon" title="Ayuda" onclick="toggleDropdown('help')">❓</button>
-        <div class="topbar-user" onclick="toggleDropdown('user')">
+        <div class="topbar-user">
           <div class="hex hex-sm" id="userHex">DA</div>
           <span class="nm" id="userName">Daniela</span>
         </div>
@@ -394,12 +398,15 @@ tbody tr:hover{background:#FAFBFD;}
 <div id="toastRoot"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf-autotable.min.js"></script>
 <script>
 /* =========================================================
    SUPABASE — conexión con la base de datos
    ========================================================= */
-const SUPABASE_URL = 'https://hkszdgfdnffgsvmxqgwd.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3pkZ2ZkbmZmZ3N2bXhxZ3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0NjIxNjUsImV4cCI6MjEwNTAzODE2NX0.fNEXV5Y1_FQT-0kpVkjhUtFxoRZQhSMJxZjtSX4MZ1w';
+const SUPABASE_URL = 'https://sqiipbvzkoopuwbtkdcu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxaWlwYnZ6a29vcHV3YnRrZGN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1Nzk5ODAsImV4cCI6MjEwMjE1NTk4MH0.FxsOKr8Ht2tzBnVQ8X8QdIyJlaSFNI0R2D-0qcKOviI';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* Esta pantalla es la del ADMINISTRADOR. Las mismas credenciales
@@ -409,18 +416,15 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
    conectados a la misma base de datos en Supabase. */
 
 function empRowToApp(r){
-  let horarioPropio = null;
-  try{ horarioPropio = r.horario_propio? (typeof r.horario_propio==='string'? JSON.parse(r.horario_propio) : r.horario_propio) : null; }catch(_e){ horarioPropio = null; }
   return { id:r.id, nombre:r.nombre, cedula:r.cedula, cargo:r.cargo, area:r.area,
     contrato:r.contrato, ingreso:r.ingreso, salario:Number(r.salario)||0, estado:r.estado,
     email:r.email||'', tel:r.tel||'', supervisor:r.supervisor||'', huella:!!r.huella, puntos:r.puntos||0,
-    turnoId:r.turno_id||null, horarioPropio };
+    turnoId:r.turno_id||null };
 }
 function empAppToRow(e){
   return { id:e.id, nombre:e.nombre, cedula:e.cedula, cargo:e.cargo, area:e.area,
     contrato:e.contrato, ingreso:e.ingreso, salario:e.salario, estado:e.estado,
-    email:e.email, tel:e.tel, supervisor:e.supervisor, huella:e.huella, puntos:e.puntos,
-    turno_id:e.turnoId||null, horario_propio: e.horarioPropio? JSON.stringify(e.horarioPropio) : null };
+    email:e.email, tel:e.tel, supervisor:e.supervisor, huella:e.huella, puntos:e.puntos, turno_id:e.turnoId||null };
 }
 function attRowToApp(r){
   /* "marcas" guarda TODOS los ingresos/salidas del día (permite más de un
@@ -432,28 +436,26 @@ function attRowToApp(r){
   if(!marcas.length){ if(r.entrada) marcas.push({hora:r.entrada, tipo:'Entrada'}); if(r.salida) marcas.push({hora:r.salida, tipo:'Salida'}); }
   return { id:r.id, empId:r.empleado_id, fecha:r.fecha, entrada:r.entrada, salida:r.salida, estado:r.estado, metodo:r.metodo, marcas };
 }
-/* Todas las funciones sb* devuelven `true` si se guardó bien, o el mensaje de
-   error (string) si falló — así quien llama puede mostrarle al usuario el
-   motivo exacto (tabla que no existe, columna que falta, RLS que bloquea,
-   etc.) en vez de un genérico "falló el guardado" sin más detalle. */
+/* Todas las funciones sb* devuelven true/false para que quien las llame pueda
+   avisarle al usuario cuando el guardado en la base de datos falla, en vez de
+   fallar en silencio (solo quedaba un console.warn antes). */
 async function sbGuardarEmpleado(e){
   try{
-    let row = empAppToRow(e);
+    const row = empAppToRow(e);
     let {error} = await sb.from('empleados').upsert(row);
-    if(error && /turno_id|horario_propio/i.test(error.message||'')){
-      /* Las columnas "turno_id" (texto) y "horario_propio" (jsonb) todavía no
-         existen en tu tabla "empleados" de Supabase. Se reintenta sin ellas
-         para no perder el resto de la ficha; agrégalas para que el horario
-         laboral configurado por colaborador quede guardado entre sesiones. */
-      delete row.turno_id; delete row.horario_propio;
+    if(error && /turno_id/i.test(error.message||'')){
+      /* La columna \"turno_id\" todavía no existe en la tabla \"empleados\" de
+         Supabase; se reintenta sin ella. Agrégala (tipo texto) para que el
+         turno asignado quede guardado entre sesiones. */
+      delete row.turno_id;
       ({error} = await sb.from('empleados').upsert(row));
     }
-    if(error){ console.warn('Supabase (empleados):', error.message); return error.message; } return true;
-  } catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
+    if(error){ console.warn('Supabase (empleados):', error.message); return false; } return true;
+  } catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
 }
 async function sbActualizarEstadoEmpleado(id, estado){
-  try{ const {error} = await sb.from('empleados').update({estado}).eq('id', id); if(error){ console.warn('Supabase (empleados):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
+  try{ const {error} = await sb.from('empleados').update({estado}).eq('id', id); if(error){ console.warn('Supabase (empleados):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
 }
 async function sbGuardarParametros(cfg){
   try{
@@ -472,8 +474,8 @@ async function sbGuardarParametros(cfg){
       delete row.horas_semanales_max;
       ({error} = await sb.from('parametros').upsert(row));
     }
-    if(error){ console.warn('Supabase (parametros):', error.message); return error.message; } return true;
-  } catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
+    if(error){ console.warn('Supabase (parametros):', error.message); return false; } return true;
+  } catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
 }
 async function sbRegistrarMarcacion(rec){
   try{
@@ -487,32 +489,39 @@ async function sbRegistrarMarcacion(rec){
       delete row.marcas;
       ({error} = await sb.from('asistencia').upsert(row));
     }
-    if(error){ console.warn('Supabase (asistencia):', error.message); return error.message; }
+    if(error){ console.warn('Supabase (asistencia):', error.message); return false; }
     return true;
-  } catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
+  } catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+/* Turnos/horarios — guardan tipo, bloques (jsonb/texto) y tolerancia. Si
+   la tabla \"turnos\" todavía no existe en Supabase, el turno sigue
+   funcionando en esta sesión (queda en DB.shifts) pero se avisa una sola
+   vez de que hace falta crear la tabla para que no se pierda al recargar. */
+let _avisoTablaTurnos = false;
+function turnoAppToRow(t){
+  return { id:t.id, nombre:t.nombre, tipo:t.tipo, tolerancia_min:t.toleranciaMin, dias:t.dias, bloques: JSON.stringify(t.bloques||[]) };
+}
+function turnoRowToApp(r){
+  let bloques=[]; try{ bloques = r.bloques? (typeof r.bloques==='string'? JSON.parse(r.bloques) : r.bloques) : []; }catch(_e){ bloques=[]; }
+  return { id:r.id, nombre:r.nombre, tipo:r.tipo||'continuo', toleranciaMin:Number(r.tolerancia_min)||5, dias:r.dias||'', bloques };
+}
+async function sbGuardarTurno(t){
+  try{
+    const {error} = await sb.from('turnos').upsert(turnoAppToRow(t));
+    if(error){
+      if(!_avisoTablaTurnos){ _avisoTablaTurnos=true; toast('⚠️ El turno se guardó solo en esta sesión: crea la tabla \"turnos\" en Supabase para que no se pierda al recargar.'); }
+      console.warn('Supabase (turnos):', error.message); return false;
+    }
+    return true;
+  } catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
+}
+async function sbBorrarTurno(id){
+  try{ const {error} = await sb.from('turnos').delete().eq('id', id); if(error){ console.warn('Supabase (turnos):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
 }
 async function sbBorrarTodosLosEmpleados(){
   const {error} = await sb.from('empleados').delete().not('id','is', null);
   if(error) throw error;
-  /* Sin esto, todo lo que dependía de esos colaboradores se queda en Supabase
-     apuntando a un empleado_id que ya no existe: asistencia, solicitudes de
-     vacaciones/permisos, huellas del kiosco, objetivos, documentos firmados,
-     reconocimientos, solicitudes de beneficios y adelantos. Al recargar, esos
-     registros "fantasma" vuelven a aparecer y pueden romper el render de esas
-     pestañas. Los activos NO se borran (son propiedad de la empresa): solo se
-     liberan (quedan "Disponible", sin asignar). Se usa allSettled para que si
-     alguna tabla todavía no existe en tu proyecto, el resto sí se limpie. */
-  await Promise.allSettled([
-    sb.from('asistencia').delete().not('id','is', null),
-    sb.from('solicitudes').delete().not('id','is', null),
-    sb.from('huellas').delete().not('credential_id','is', null),
-    sb.from('objetivos').delete().not('id','is', null),
-    sb.from('documentos').delete().not('id','is', null),
-    sb.from('reconocimientos').delete().not('id','is', null),
-    sb.from('beneficio_solicitudes').delete().not('id','is', null),
-    sb.from('adelantos').delete().not('id','is', null),
-    sb.from('activos').update({estado:'Disponible', asignado_a:null, fecha:null}).not('asignado_a','is', null),
-  ]);
 }
 /* Solicitudes (permisos y vacaciones) — usadas tanto por el admin
    (DB.leaveRequests) como por el portal del colaborador. */
@@ -524,169 +533,26 @@ function solAppToRow(l){
   return { id:l.id, empleado_id:l.empId, tipo:l.tipo, fecha_inicio:l.inicio, fecha_fin:l.fin, motivo:l.motivo, estado:l.estado };
 }
 async function sbGuardarSolicitud(l){
-  try{ const {error} = await sb.from('solicitudes').upsert(solAppToRow(l)); if(error){ console.warn('Supabase (solicitudes):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
+  try{ const {error} = await sb.from('solicitudes').upsert(solAppToRow(l)); if(error){ console.warn('Supabase (solicitudes):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
 }
 async function sbActualizarSolicitud(id, estado){
-  try{ const {error} = await sb.from('solicitudes').update({estado}).eq('id', id); if(error){ console.warn('Supabase (solicitudes):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
+  try{ const {error} = await sb.from('solicitudes').update({estado}).eq('id', id); if(error){ console.warn('Supabase (solicitudes):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
 }
 /* Huellas (credenciales WebAuthn registradas desde el kiosco) */
 async function sbGuardarHuella(h){
-  try{ const {error} = await sb.from('huellas').upsert(h, {onConflict:'credential_id'}); if(error){ console.warn('Supabase (huellas):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Activos (inventario y asignación a colaboradores) */
-function assetRowToApp(r){
-  return { id:r.id, nombre:r.nombre, categoria:r.categoria, tipo:r.tipo, identificador:r.identificador,
-    estado:r.estado, asignadoA:r.asignado_a||null, fecha:r.fecha||null, valor:Number(r.valor)||0 };
-}
-function assetAppToRow(a){
-  return { id:a.id, nombre:a.nombre, categoria:a.categoria, tipo:a.tipo, identificador:a.identificador,
-    estado:a.estado, asignado_a:a.asignadoA, fecha:a.fecha, valor:a.valor };
-}
-async function sbGuardarActivo(a){
-  try{ const {error} = await sb.from('activos').upsert(assetAppToRow(a)); if(error){ console.warn('Supabase (activos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Turnos (plantillas de horario reutilizables, continuas o segmentadas) */
-function turnoRowToApp(r){
-  let horario = null;
-  try{ horario = r.horario? (typeof r.horario==='string'? JSON.parse(r.horario) : r.horario) : null; }catch(_e){ horario = null; }
-  return { id:r.id, nombre:r.nombre, dias:r.dias, horario };
-}
-function turnoAppToRow(t){
-  return { id:t.id, nombre:t.nombre, dias:t.dias, horario: JSON.stringify(t.horario||{}) };
-}
-async function sbGuardarTurno(t){
-  try{ const {error} = await sb.from('turnos').upsert(turnoAppToRow(t)); if(error){ console.warn('Supabase (turnos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-async function sbBorrarTurno(id){
-  try{ const {error} = await sb.from('turnos').delete().eq('id', id); if(error){ console.warn('Supabase (turnos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Reconocimientos (muro de reconocimientos entre colaboradores) */
-function recogRowToApp(r){
-  let comentarios = [];
-  try{ comentarios = r.comentarios? (typeof r.comentarios==='string'? JSON.parse(r.comentarios) : r.comentarios) : []; }catch(_e){ comentarios = []; }
-  return { id:r.id, categoria:r.categoria, color:r.color, de:r.de_id, para:r.para_id, mensaje:r.mensaje, fecha:r.fecha, likes:r.likes||0, comentarios };
-}
-function recogAppToRow(r){
-  return { id:r.id, categoria:r.categoria, color:r.color, de_id:r.de, para_id:r.para, mensaje:r.mensaje, fecha:r.fecha, likes:r.likes, comentarios: JSON.stringify(r.comentarios||[]) };
-}
-async function sbGuardarReconocimiento(r){
-  try{ const {error} = await sb.from('reconocimientos').upsert(recogAppToRow(r)); if(error){ console.warn('Supabase (reconocimientos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Objetivos (organizacionales y personales) */
-function objRowToApp(r){
-  return { id:r.id, empId:r.empleado_id, tipo:r.tipo, descripcion:r.descripcion, meta:r.meta, peso:Number(r.peso)||0, avance:Number(r.avance)||0,
-    fechaTermino:r.fecha_termino, activo:!!r.activo, aprobado:!!r.aprobado, fechaAprobacion:r.fecha_aprobacion||null, creadoPor:r.creado_por||'' };
-}
-function objAppToRow(o){
-  return { id:o.id, empleado_id:o.empId, tipo:o.tipo, descripcion:o.descripcion, meta:o.meta, peso:o.peso, avance:o.avance,
-    fecha_termino:o.fechaTermino, activo:o.activo, aprobado:o.aprobado, fecha_aprobacion:o.fechaAprobacion, creado_por:o.creadoPor };
-}
-async function sbGuardarObjetivo(o){
-  try{ const {error} = await sb.from('objetivos').upsert(objAppToRow(o)); if(error){ console.warn('Supabase (objetivos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-async function sbBorrarObjetivo(id){
-  try{ const {error} = await sb.from('objetivos').delete().eq('id', id); if(error){ console.warn('Supabase (objetivos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Documentos y firma electrónica */
-function docRowToApp(r){
-  return { id:r.id, empId:r.empleado_id, nombre:r.nombre, tipo:r.tipo, fecha:r.fecha, estado:r.estado, firmante:r.firmante||null, firmaFecha:r.firma_fecha||null };
-}
-function docAppToRow(d){
-  return { id:d.id, empleado_id:d.empId, nombre:d.nombre, tipo:d.tipo, fecha:d.fecha, estado:d.estado, firmante:d.firmante, firma_fecha:d.firmaFecha };
-}
-async function sbGuardarDocumento(d){
-  try{ const {error} = await sb.from('documentos').upsert(docAppToRow(d)); if(error){ console.warn('Supabase (documentos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Canal de denuncias */
-function cplRowToApp(r){
-  let comentarios = [];
-  try{ comentarios = r.comentarios? (typeof r.comentarios==='string'? JSON.parse(r.comentarios) : r.comentarios) : []; }catch(_e){ comentarios = []; }
-  return { id:r.id, folio:r.folio, fecha:r.fecha, categoria:r.categoria, relacion:r.relacion, anonimo:!!r.anonimo, nombre:r.nombre||null, email:r.email||null,
-    descripcion:r.descripcion, estado:r.estado, prioridad:r.prioridad, comentarios };
-}
-function cplAppToRow(c){
-  return { id:c.id, folio:c.folio, fecha:c.fecha, categoria:c.categoria, relacion:c.relacion, anonimo:c.anonimo, nombre:c.nombre, email:c.email,
-    descripcion:c.descripcion, estado:c.estado, prioridad:c.prioridad, comentarios: JSON.stringify(c.comentarios||[]) };
-}
-async function sbGuardarDenuncia(c){
-  try{ const {error} = await sb.from('denuncias').upsert(cplAppToRow(c)); if(error){ console.warn('Supabase (denuncias):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Encuestas de clima */
-function svyRowToApp(r){
-  let preguntas=[], respuestas=[];
-  try{ preguntas = r.preguntas? (typeof r.preguntas==='string'? JSON.parse(r.preguntas) : r.preguntas) : []; }catch(_e){ preguntas=[]; }
-  try{ respuestas = r.respuestas? (typeof r.respuestas==='string'? JSON.parse(r.respuestas) : r.respuestas) : []; }catch(_e){ respuestas=[]; }
-  return { id:r.id, titulo:r.titulo, descripcion:r.descripcion||'', estado:r.estado, creada:r.creada, preguntas, respuestas };
-}
-function svyAppToRow(s){
-  return { id:s.id, titulo:s.titulo, descripcion:s.descripcion, estado:s.estado, creada:s.creada, preguntas: JSON.stringify(s.preguntas||[]), respuestas: JSON.stringify(s.respuestas||[]) };
-}
-async function sbGuardarEncuesta(s){
-  try{ const {error} = await sb.from('encuestas').upsert(svyAppToRow(s)); if(error){ console.warn('Supabase (encuestas):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Solicitudes de beneficios (canje de puntos) */
-function brRowToApp(r){
-  return { id:r.id, empId:r.empleado_id, beneficioId:r.beneficio_id, fecha:r.fecha, estado:r.estado };
-}
-function brAppToRow(b){
-  return { id:b.id, empleado_id:b.empId, beneficio_id:b.beneficioId, fecha:b.fecha, estado:b.estado };
-}
-async function sbGuardarSolicitudBeneficio(b){
-  try{ const {error} = await sb.from('beneficio_solicitudes').upsert(brAppToRow(b)); if(error){ console.warn('Supabase (beneficio_solicitudes):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Adelantos de sueldo */
-function advRowToApp(r){
-  return { id:r.id, empId:r.empleado_id, fecha:r.fecha, monto:Number(r.monto)||0, estado:r.estado };
-}
-function advAppToRow(a){
-  return { id:a.id, empleado_id:a.empId, fecha:a.fecha, monto:a.monto, estado:a.estado };
-}
-async function sbGuardarAdelanto(a){
-  try{ const {error} = await sb.from('adelantos').upsert(advAppToRow(a)); if(error){ console.warn('Supabase (adelantos):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
-}
-/* Nómina (liquidaciones/"runs" con el detalle por colaborador en una columna JSON) */
-function runRowToApp(r){
-  let detalles=[];
-  try{ detalles = r.detalles? (typeof r.detalles==='string'? JSON.parse(r.detalles) : r.detalles) : []; }catch(_e){ detalles=[]; }
-  return { id:r.id, periodo:r.periodo, fechaPago:r.fecha_pago, estado:r.estado, detalles };
-}
-function runAppToRow(run){
-  return { id:run.id, periodo:run.periodo, fecha_pago:run.fechaPago, estado:run.estado, detalles: JSON.stringify(run.detalles||[]) };
-}
-async function sbGuardarNomina(run){
-  try{ const {error} = await sb.from('nomina_runs').upsert(runAppToRow(run)); if(error){ console.warn('Supabase (nomina_runs):', error.message); return error.message; } return true; }
-  catch(err){ console.warn('Supabase no disponible:', err.message); return err.message; }
+  try{ const {error} = await sb.from('huellas').upsert(h, {onConflict:'credential_id'}); if(error){ console.warn('Supabase (huellas):', error.message); return false; } return true; }
+  catch(err){ console.warn('Supabase no disponible:', err.message); return false; }
 }
 async function cargarDesdeSupabase(){
-  const tablasFaltantes = []; // se acumulan aquí las tablas que no se pudieron leer, para un solo aviso al final
   try{
-    const [
-      {data:emps, error:e1}, {data:atts, error:e2}, {data:par, error:e3}, {data:sols, error:e4},
-      {data:huellasData, error:e5}, {data:activosData, error:e6}, {data:recogData, error:e7},
-      {data:objData, error:e8}, {data:docData, error:e9}, {data:cplData, error:e10},
-      {data:svyData, error:e11}, {data:brData, error:e12}, {data:advData, error:e13}, {data:runData, error:e14},
-      {data:turnosData, error:e15},
-    ] = await Promise.all([
+    const [{data:emps, error:e1}, {data:atts, error:e2}, {data:par, error:e3}, {data:sols, error:e4}, {data:huellasData, error:e5}, {data:turnosData, error:e6}] = await Promise.all([
       sb.from('empleados').select('*'), sb.from('asistencia').select('*'), sb.from('parametros').select('*').eq('id',1).maybeSingle(),
-      sb.from('solicitudes').select('*'), sb.from('huellas').select('*'), sb.from('activos').select('*'),
-      sb.from('reconocimientos').select('*'), sb.from('objetivos').select('*'), sb.from('documentos').select('*'),
-      sb.from('denuncias').select('*'), sb.from('encuestas').select('*'), sb.from('beneficio_solicitudes').select('*'),
-      sb.from('adelantos').select('*'), sb.from('nomina_runs').select('*'), sb.from('turnos').select('*'),
+      sb.from('solicitudes').select('*'), sb.from('huellas').select('*'), sb.from('turnos').select('*'),
     ]);
+    if(!e6 && turnosData && turnosData.length){ DB.shifts = turnosData.map(turnoRowToApp); }
+    else if(e6){ console.warn('Supabase (turnos): tabla \"turnos\" no encontrada, usando turnos de esta sesión.', e6.message); }
     if(!e1 && emps){ DB.empleados = emps.map(empRowToApp); }
     else if(e1){ console.warn('Supabase (empleados):', e1.message); toast('⚠️ No se pudieron cargar los colaboradores desde la base de datos: '+e1.message); }
     if(!e2 && atts){ DB.attendance = atts.map(attRowToApp); }
@@ -695,26 +561,6 @@ async function cargarDesdeSupabase(){
     else if(e4){ console.warn('Supabase (solicitudes):', e4.message); }
     if(!e5 && huellasData){ DB.huellas = huellasData; }
     else if(e5){ console.warn('Supabase (huellas):', e5.message); }
-    if(!e6 && activosData){ DB.assets = activosData.map(assetRowToApp); }
-    else if(e6){ console.warn('Supabase (activos):', e6.message); toast('⚠️ No se pudo cargar el inventario de activos desde la base de datos: '+e6.message); }
-    if(!e7 && recogData){ DB.recognitions = recogData.map(recogRowToApp); }
-    else if(e7){ console.warn('Supabase (reconocimientos):', e7.message); tablasFaltantes.push('reconocimientos'); }
-    if(!e8 && objData){ DB.objectives = objData.map(objRowToApp); }
-    else if(e8){ console.warn('Supabase (objetivos):', e8.message); tablasFaltantes.push('objetivos'); }
-    if(!e9 && docData){ DB.documents = docData.map(docRowToApp); }
-    else if(e9){ console.warn('Supabase (documentos):', e9.message); tablasFaltantes.push('documentos'); }
-    if(!e10 && cplData){ DB.complaints = cplData.map(cplRowToApp); }
-    else if(e10){ console.warn('Supabase (denuncias):', e10.message); tablasFaltantes.push('denuncias'); }
-    if(!e11 && svyData){ DB.surveys = svyData.map(svyRowToApp); }
-    else if(e11){ console.warn('Supabase (encuestas):', e11.message); tablasFaltantes.push('encuestas'); }
-    if(!e12 && brData){ DB.benefitRequests = brData.map(brRowToApp); }
-    else if(e12){ console.warn('Supabase (beneficio_solicitudes):', e12.message); tablasFaltantes.push('beneficio_solicitudes'); }
-    if(!e13 && advData){ DB.advances = advData.map(advRowToApp); }
-    else if(e13){ console.warn('Supabase (adelantos):', e13.message); tablasFaltantes.push('adelantos'); }
-    if(!e14 && runData){ DB.payrollRuns = runData.map(runRowToApp); }
-    else if(e14){ console.warn('Supabase (nomina_runs):', e14.message); tablasFaltantes.push('nomina_runs'); }
-    if(!e15 && turnosData){ DB.shifts = turnosData.map(turnoRowToApp); }
-    else if(e15){ console.warn('Supabase (turnos):', e15.message); tablasFaltantes.push('turnos (se muestran los turnos de ejemplo por ahora)'); }
     if(!e3 && par){
       Object.assign(CFG, { smmlv:Number(par.smmlv)||CFG.smmlv, auxTransporte:Number(par.aux_transporte)||0,
         saludPct:Number(par.salud_pct)||0, pensionPct:Number(par.pension_pct)||0, horasMes:Number(par.horas_mes)||230,
@@ -728,14 +574,6 @@ async function cargarDesdeSupabase(){
         horasSemanalesMax:Number(par.horas_semanales_max)||CFG.horasSemanalesMax,
         companyName: par.company_name||CFG.companyName, companyNit: par.company_nit||CFG.companyNit });
     } else if(e3){ console.warn('Supabase (parametros):', e3.message); }
-    if(tablasFaltantes.length){
-      /* Estas tablas todavía no existen en tu proyecto de Supabase (o el anon key
-         no tiene permiso sobre ellas). Mientras no las crees, lo que se registre
-         en esas pestañas se ve bien en pantalla pero se pierde al recargar.
-         Revisa la consola del navegador para el detalle de cada tabla y crea el
-         esquema SQL correspondiente en Supabase. */
-      toast('⚠️ Estas tablas no existen aún en Supabase, así que no se guardan entre sesiones: '+tablasFaltantes.join(', '));
-    }
   } catch(err){
     console.warn('No se pudo conectar a Supabase:', err.message);
     toast('⚠️ No se pudo conectar a la base de datos: '+err.message);
@@ -773,10 +611,20 @@ const DB = {
   payrollRuns:[],
   attendance:[],
   huellas:[], // credenciales WebAuthn del kiosco: {credential_id, empleado_id, public_key, counter}
+  /* Cada turno define el horario que el admin espera que cumpla el
+     colaborador, para poder calcular automáticamente si llegó tarde o
+     salió antes de tiempo. tipo:'continuo' = una sola jornada corrida
+     (un bloque); tipo:'partido' = jornada segmentada en bloque de mañana
+     y bloque de tarde con un descanso entre ambos (dos bloques). Cada
+     bloque tiene {inicio, fin}. toleranciaMin son los minutos de gracia
+     antes de marcar tardanza o salida anticipada. */
   shifts:[
-    {id:'shift1', nombre:'Administrativo', dias:'Lun–Vie', horario:{tipo:'continuo', inicio:'08:00', fin:'17:00', toleranciaMin:5}},
-    {id:'shift2', nombre:'Operaciones / Bodega', dias:'Lun–Sáb', horario:{tipo:'continuo', inicio:'06:30', fin:'15:30', toleranciaMin:5}},
-    {id:'shift3', nombre:'Comercial (jornada partida)', dias:'Lun–Vie', horario:{tipo:'segmentado', bloques:[{inicio:'08:00',fin:'12:00'},{inicio:'14:00',fin:'18:00'}], toleranciaMin:5}},
+    {id:'shift1', nombre:'Administrativo', tipo:'continuo', toleranciaMin:5, dias:'Lun–Vie',
+      bloques:[{inicio:'08:00', fin:'17:00'}]},
+    {id:'shift2', nombre:'Operaciones / Bodega', tipo:'continuo', toleranciaMin:10, dias:'Lun–Sáb',
+      bloques:[{inicio:'06:30', fin:'15:30'}]},
+    {id:'shift3', nombre:'Comercial', tipo:'continuo', toleranciaMin:5, dias:'Lun–Vie',
+      bloques:[{inicio:'09:00', fin:'18:00'}]},
   ],
   leaveRequests:[],
   documents:[],
@@ -813,7 +661,6 @@ let state = {
   complaintTab:'nueva', complaintSel:null,
   payrollOpenRun: null,
   surveyTemp:null, surveyTab:'gestion',
-  turnoTemp:null, horarioEmpTemp:null,
   navCollapsed:{},
   currentEmp:null,
   openDropdown:null,
@@ -822,52 +669,28 @@ let state = {
      Se usa para no repetir la alarma sonora una vez que el admin ya la revisó
      esa semana para ese colaborador. */
   alertasHoras:{},
+  /* Reportes: cálculo de horas laboradas por día / semana / mes / año */
+  reportPeriodo:'semana', reportFecha:DEMO_TODAY, reportEmpFiltro:'todos',
 };
 
 const NAV_GROUPS = [
   {id:'principal', label:null, items:[
-    {id:'dashboard', label:'Resumen', ico:'📊'}, {id:'empleados', label:'Colaboradores', ico:'🧑\u200d💼'}, {id:'reportes', label:'Reportes', ico:'📤'},
-  ]},
-  {id:'administrativo', label:'Administrativo', items:[
-    {id:'nomina', label:'Nómina', ico:'💵'}, {id:'asistencia', label:'Asistencia', ico:'🕒'}, {id:'documentos', label:'Documentos y firma', ico:'✍️'},
-    {id:'activos', label:'Activos', ico:'💻'}, {id:'adelantos', label:'Adelantos de sueldo', ico:'⚡'},
-  ]},
-  {id:'talento', label:'Talento', items:[
-    {id:'objetivos', label:'Objetivos', ico:'🎯'}, {id:'reconocimientos', label:'Reconocimientos', ico:'⭐'}, {id:'encuestas', label:'Encuestas', ico:'📋'}, {id:'beneficios', label:'Beneficios', ico:'🎁'},
-  ]},
-  {id:'cultura', label:'Cultura', items:[
-    {id:'denuncias', label:'Canal de denuncias', ico:'🛡️'}, {id:'comunicacion', label:'Comunicación', ico:'💬'},
-  ]},
-  {id:'informacion', label:'Información', items:[
-    {id:'parametros', label:'Parámetros legales', ico:'⚖️'},
+    {id:'dashboard', label:'Resumen', ico:'📊'},
+    {id:'empleados', label:'Colaboradores', ico:'🧑\u200d💼'},
+    {id:'reportes', label:'Reportes', ico:'📤'},
+    {id:'asistencia', label:'Asistencia', ico:'🕒'},
   ]},
 ];
 const TITLES = {
   dashboard:['Resumen','Panorama general de la compañía'],
   empleados:['Colaboradores','Ficha maestra del personal activo e inactivo'],
-  nomina:['Nómina','Liquidación de nómina y prestaciones'],
+  reportes:['Reportes','Cálculo de horas laboradas y exportadores'],
   asistencia:['Asistencia','Turnos, marcaciones, permisos y vacaciones'],
-  documentos:['Documentos y firma','Documentos laborales y firma electrónica'],
-  denuncias:['Canal de denuncias','Recepción y seguimiento confidencial de reportes'],
-  comunicacion:['Comunicación','Centro de mensajería multicanal'],
-  activos:['Activos','Inventario y asignación de activos de la empresa'],
-  encuestas:['Encuestas','Clima organizacional y retroalimentación'],
-  parametros:['Parámetros legales','Valores usados en el cálculo de nómina'],
-  objetivos:['Objetivos','Seguimiento de metas organizacionales y personales'],
-  reconocimientos:['Reconocimientos','Cultura de feedback positivo entre colaboradores'],
-  beneficios:['Beneficios','Catálogo de beneficios y canje de puntos'],
-  adelantos:['Adelantos de sueldo','Solicitud de anticipos sobre el salario'],
-  reportes:['Reportes','Centro de exportadores y plantillas'],
 };
 
 function $(sel,ctx=document){return ctx.querySelector(sel);}
 function $all(sel,ctx=document){return [...ctx.querySelectorAll(sel)];}
 function emp(id){return DB.empleados.find(e=>e.id===id);}
-/* Nombre "seguro" de un colaborador: si el id ya no existe (por ejemplo, un
-   activo, documento, objetivo o reconocimiento que sigue apuntando a alguien
-   que fue eliminado — un "dato fantasma"), evita que se rompa el render de
-   toda la pestaña y en su lugar muestra un texto claro. */
-function empNombre(id){ const e=emp(id); return e? e.nombre : '(colaborador eliminado)'; }
 function iniciales(nombre){return nombre.split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase();}
 function apellidosDe(nombre){const p=nombre.split(' ').filter(Boolean); return p.slice(-2).join(' ');}
 function nombresDe(nombre){const p=nombre.split(' ').filter(Boolean); return p.slice(0,Math.max(1,p.length-2)).join(' ');}
@@ -885,11 +708,7 @@ function toast(msg){
   const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
   $('#toastRoot').appendChild(t);
   requestAnimationFrame(()=>t.classList.add('show'));
-  /* Los mensajes de error ahora incluyen el detalle real de Supabase y son
-     más largos, así que el tiempo en pantalla escala con el largo del texto
-     (2.6s para un aviso corto, hasta 8s para uno con el detalle del error). */
-  const duracion = Math.min(8000, Math.max(2600, msg.length*55));
-  setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},duracion);
+  setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},2600);
 }
 /* Animación de confirmación (check) para marcaciones NFC exitosas y para la
    asignación de un tag NFC. Se muestra un par de segundos y se retira sola. */
@@ -991,11 +810,7 @@ function renderApp(){
   }).join('');
 
   const renderers = {
-    dashboard:renderDashboard, empleados:renderEmpleados, nomina:renderNomina, asistencia:renderAsistencia,
-    documentos:renderDocumentos, denuncias:renderDenuncias, comunicacion:renderComunicacion,
-    activos:renderActivos, encuestas:renderEncuestas, parametros:renderParametros,
-    objetivos:renderObjetivos, reconocimientos:renderReconocimientos, beneficios:renderBeneficios,
-    adelantos:renderAdelantos, reportes:renderReportes,
+    dashboard:renderDashboard, empleados:renderEmpleados, asistencia:renderAsistencia, reportes:renderReportes,
   };
   let bodyHtml;
   try{
@@ -1013,7 +828,6 @@ function renderApp(){
   const pc = pendingCounts();
   const totalNotif = pc.permisos+pc.documentos+pc.denuncias+pc.beneficios;
   $('#notifDot').hidden = totalNotif===0;
-  $('#commDot').hidden = unreadComm()===0;
 
   if(state.openDropdown) renderDropdown(state.openDropdown); else $('#dropdownRoot').innerHTML='';
   renderAlertasHorasBanner();
@@ -1046,10 +860,10 @@ function renderDropdown(which){
   if(!which){ root.innerHTML=''; return; }
   if(which==='notif'){
     const items = [
-      ...DB.leaveRequests.filter(l=>l.estado==='Pendiente').map(l=>({t:`Permiso pendiente — ${empNombre(l.empId)}`, s:`${l.tipo} · ${fmtDate(l.inicio)}`, go:'asistencia'})),
-      ...DB.documents.filter(d=>d.estado==='Pendiente').map(d=>({t:`Documento sin firmar — ${d.nombre}`, s:empNombre(d.empId), go:'documentos'})),
+      ...DB.leaveRequests.filter(l=>l.estado==='Pendiente').map(l=>({t:`Permiso pendiente — ${emp(l.empId).nombre}`, s:`${l.tipo} · ${fmtDate(l.inicio)}`, go:'asistencia'})),
+      ...DB.documents.filter(d=>d.estado==='Pendiente').map(d=>({t:`Documento sin firmar — ${d.nombre}`, s:emp(d.empId).nombre, go:'documentos'})),
       ...DB.complaints.filter(c=>c.estado==='Nuevo').map(c=>({t:`Nueva denuncia ${c.folio}`, s:c.categoria, go:'denuncias'})),
-      ...DB.benefitRequests.filter(b=>b.estado==='Pendiente').map(b=>({t:`Solicitud de beneficio — ${empNombre(b.empId)}`, s:DB.benefits.find(x=>x.id===b.beneficioId).nombre, go:'beneficios'})),
+      ...DB.benefitRequests.filter(b=>b.estado==='Pendiente').map(b=>({t:`Solicitud de beneficio — ${emp(b.empId).nombre}`, s:DB.benefits.find(x=>x.id===b.beneficioId).nombre, go:'beneficios'})),
     ];
     root.innerHTML = `<div class="dropdown-panel"><div class="dp-head">Notificaciones</div><div class="dp-body">
       ${items.length? items.map(it=>`<div class="dp-item" onclick="navigate('${it.go}')"><div class="t">${it.t}</div><div class="s">${it.s}</div></div>`).join('') : '<div class="dp-item"><div class="s">No tienes notificaciones pendientes.</div></div>'}
@@ -1089,49 +903,6 @@ function marcasDeRegistro(rec){
   const m=[]; if(rec.entrada) m.push({hora:rec.entrada, tipo:'Entrada'}); if(rec.salida) m.push({hora:rec.salida, tipo:'Salida'}); return m;
 }
 function horaAMinutos(hstr){ if(!hstr) return null; const p=hstr.split(':'); return (Number(p[0])||0)*60 + (Number(p[1])||0); }
-
-/* ---------------------------------------------------------
-   HORARIOS LABORALES (continuos o segmentados con descanso)
-   Un "horario" tiene esta forma:
-     {tipo:'continuo', inicio:'08:00', fin:'17:00', toleranciaMin:5}
-     {tipo:'segmentado', bloques:[{inicio,fin},{inicio,fin},...], toleranciaMin:5}
-   Un colaborador lo obtiene de su horario personalizado (e.horarioPropio,
-   tiene prioridad) o del turno que tenga asignado (e.turnoId -> DB.shifts).
-   Si no tiene ninguno de los dos, no hay horario definido para él.
-   --------------------------------------------------------- */
-function horarioDeEmpleado(e){
-  if(!e) return null;
-  if(e.horarioPropio) return e.horarioPropio;
-  if(e.turnoId){ const t = DB.shifts.find(s=>s.id===e.turnoId); if(t && t.horario) return t.horario; }
-  return null;
-}
-function bloquesHorario(h){
-  if(!h) return [];
-  if(h.tipo==='segmentado') return (h.bloques||[]).filter(b=>b && b.inicio && b.fin);
-  return (h.inicio && h.fin)? [{inicio:h.inicio, fin:h.fin}] : [];
-}
-function horasEsperadasHorario(h){
-  return bloquesHorario(h).reduce((s,b)=> s + Math.max(0, horaAMinutos(b.fin)-horaAMinutos(b.inicio))/60, 0);
-}
-function formatoHorario(h){
-  const bloques = bloquesHorario(h);
-  if(!bloques.length) return 'Sin definir';
-  const txt = bloques.map(b=>`${b.inicio}–${b.fin}`).join(' y ');
-  return `${h.tipo==='segmentado'? 'Segmentada':'Continua'}: ${txt} (${horasEsperadasHorario(h).toFixed(1)}h/día)`;
-}
-/* Evalúa si una marcación de "Entrada" fue tardía, según cuál de los bloques
-   del horario le corresponde (numEntrada: 1 = primera entrada del día — la de
-   la mañana —, 2 = segunda — el regreso del almuerzo en una jornada
-   segmentada —, etc.). Devuelve null si el colaborador no tiene horario
-   definido, para que quien llama decida un valor por defecto. */
-function evaluarEntrada(e, horaStr, numEntrada){
-  const h = horarioDeEmpleado(e);
-  const bloques = bloquesHorario(h);
-  if(!bloques.length) return null;
-  const bloque = bloques[Math.min(Math.max(numEntrada,1)-1, bloques.length-1)];
-  const tolerancia = (h.toleranciaMin!=null)? h.toleranciaMin : 5;
-  return horaAMinutos(horaStr) > (horaAMinutos(bloque.inicio)+tolerancia) ? 'Tarde' : 'A tiempo';
-}
 function horasDeRegistro(rec){
   const marcas = marcasDeRegistro(rec).slice().sort((a,b)=>horaAMinutos(a.hora)-horaAMinutos(b.hora));
   let total=0, abierta=null;
@@ -1154,6 +925,80 @@ function horasSemanaEmpleado(empId, fechaRef){
   const ini = inicioSemanaISO(fechaRef), fin = finSemanaISO(ini);
   return DB.attendance.filter(a=>a.empId===empId && a.fecha>=ini && a.fecha<=fin)
     .reduce((sum,a)=> sum + horasDeRegistro(a).horas, 0);
+}
+
+/* =========================================================
+   TURNOS Y HORARIOS (jornada continua o partida)
+   El admin define, por turno, si la jornada es continua (un solo
+   bloque de entrada/salida) o partida (bloque de mañana + bloque de
+   tarde con descanso entre ambos, ej. 8:00–12:00 y 14:00–17:00). Cada
+   colaborador se asigna a un turno y con eso el sistema calcula
+   automáticamente si llegó tarde o salió antes de tiempo, comparando
+   la hora real de cada marcación contra el bloque que le corresponde.
+   ========================================================= */
+const TURNO_POR_DEFECTO = { id:null, nombre:'Sin turno asignado', tipo:'continuo', toleranciaMin:5, dias:'Lun–Vie', bloques:[{inicio:'08:00', fin:'17:00'}] };
+function turnoDeEmpleado(empId){
+  const e = emp(empId);
+  if(e && e.turnoId){ const t = DB.shifts.find(s=>s.id===e.turnoId); if(t) return t; }
+  return TURNO_POR_DEFECTO;
+}
+function horasObjetivoTurno(turno){
+  if(!turno || !turno.bloques) return 0;
+  return turno.bloques.reduce((s,b)=> s + Math.max(0,(horaAMinutos(b.fin)-horaAMinutos(b.inicio)))/60, 0);
+}
+function horarioTextoTurno(turno){
+  if(!turno || !turno.bloques || !turno.bloques.length) return '—';
+  return turno.bloques.map(b=>`${b.inicio}–${b.fin}`).join(' y ');
+}
+function sumarMinutosHora(hstr, mins){
+  const total = horaAMinutos(hstr) + mins;
+  const h = Math.floor(((total%1440)+1440)%1440/60), m = ((total%1440)+1440)%1440%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+/* Calcula el estado de UNA marcación (Entrada o Salida) contra el turno
+   del colaborador. marcasPrevias son las marcaciones YA registradas hoy
+   antes de esta (para saber si es la entrada/salida de la mañana, de la
+   tarde, etc. en un turno partido). */
+function estadoDeMarcacion(empId, tipo, hora, marcasPrevias){
+  const turno = turnoDeEmpleado(empId);
+  const bloques = (turno.bloques&&turno.bloques.length)? turno.bloques : TURNO_POR_DEFECTO.bloques;
+  const tolerancia = turno.toleranciaMin!=null? turno.toleranciaMin : 5;
+  if(tipo==='Entrada'){
+    const entradasPrevias = marcasPrevias.filter(m=>m.tipo==='Entrada').length;
+    const idx = Math.min(entradasPrevias, bloques.length-1);
+    const limite = sumarMinutosHora(bloques[idx].inicio, tolerancia);
+    return hora > limite ? 'Tarde' : 'A tiempo';
+  }
+  const salidasPrevias = marcasPrevias.filter(m=>m.tipo==='Salida').length;
+  const idx = Math.min(salidasPrevias, bloques.length-1);
+  const esUltimoBloque = idx === bloques.length-1;
+  if(!esUltimoBloque) return 'A tiempo'; // salida intermedia (ej. a almorzar), no se evalúa
+  const limite = sumarMinutosHora(bloques[idx].fin, -tolerancia);
+  return hora < limite ? 'Salida anticipada' : 'A tiempo';
+}
+/* Combina el estado de un registro de asistencia a partir de todas sus
+   marcaciones del día: si alguna entrada llegó tarde, el día queda como
+   \"Tarde\" (prioridad máxima); si no, pero la salida final fue anticipada,
+   queda como \"Salida anticipada\"; si el día ya se cerró (hay una última
+   salida) y se cumplieron las marcaciones sin novedad, queda \"A tiempo\". */
+function recalcularEstadoRegistro(rec){
+  const marcas = marcasDeRegistro(rec).slice().sort((a,b)=>horaAMinutos(a.hora)-horaAMinutos(b.hora));
+  let tarde=false, anticipada=false;
+  marcas.forEach((m,i)=>{
+    const previas = marcas.slice(0,i);
+    const est = estadoDeMarcacion(rec.empId, m.tipo, m.hora, previas);
+    if(est==='Tarde') tarde=true;
+    if(est==='Salida anticipada') anticipada=true;
+  });
+  rec.estado = tarde? 'Tarde' : (anticipada? 'Salida anticipada' : (marcas.length? 'A tiempo' : rec.estado));
+  return rec.estado;
+}
+/* true si el registro del día ya tiene la última marcación de salida
+   (jornada cerrada) para poder comparar horas trabajadas vs. horas
+   objetivo del turno. */
+function jornadaCerrada(rec){
+  const marcas = marcasDeRegistro(rec);
+  return marcas.length>0 && marcas[marcas.length-1].tipo==='Salida';
 }
 
 /* ---------------------------------------------------------
@@ -1233,18 +1078,13 @@ function exportCSV(filename, headers, rows){
    ========================================================= */
 function renderDashboard(){
   const activos = DB.empleados.filter(e=>e.estado==='Activo');
-  const runCerrada = [...DB.payrollRuns].reverse().find(r=>r.estado==='Cerrada');
-  const totalNomina = runCerrada? runCerrada.detalles.reduce((s,d)=>s+d.neto,0) : 0;
   const marcHoy = DB.attendance.filter(a=>a.fecha===DEMO_TODAY);
   const aTiempo = marcHoy.filter(a=>a.estado==='A tiempo').length;
   const pctATiempo = marcHoy.length? Math.round(aTiempo/marcHoy.length*100) : 0;
-  const denunciasAbiertas = DB.complaints.filter(c=>c.estado!=='Cerrado').length;
-  const activosAsignados = DB.assets.filter(a=>a.estado==='Asignado').length;
-  const encuestasActivas = DB.surveys.filter(s=>s.estado==='Activa').length;
-  const pendFirma = DB.documents.filter(d=>d.estado==='Pendiente');
+  const horasHoyTotal = marcHoy.reduce((s,a)=> s + horasDeRegistro(a).horas, 0);
   const permPend = DB.leaveRequests.filter(l=>l.estado==='Pendiente');
-  const recogMes = DB.recognitions.filter(r=>r.fecha.slice(0,7)==='2026-09').length;
-  const avgObjetivos = Math.round(DB.objectives.reduce((s,o)=>s+o.avance,0)/DB.objectives.length);
+  const limiteSemanal = CFG.horasSemanalesMax||42;
+  const sobreLimite = activos.filter(e=> horasSemanaEmpleado(e.id, DEMO_TODAY) > limiteSemanal);
 
   return `
   <div class="card card-pad" style="margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
@@ -1256,15 +1096,9 @@ function renderDashboard(){
   </div>
   <div class="grid grid-4" style="margin-bottom:18px;">
     <div class="card stat"><div class="lbl"><span>Colaboradores activos</span><span class="icochip chip-blue">🧑‍💼</span></div><div class="num">${activos.length}</div><div class="sub">${DB.empleados.length-activos.length} inactivos</div></div>
-    <div class="card stat"><div class="lbl"><span>Nómina último cierre</span><span class="icochip chip-green">💵</span></div><div class="num" style="font-size:19px;">${fmtCOP(totalNomina)}</div><div class="sub">${runCerrada? runCerrada.periodo : 'Sin cierres aún'}</div></div>
-    <div class="card stat"><div class="lbl"><span>Asistencia puntual hoy</span><span class="icochip chip-info">🕒</span></div><div class="num">${pctATiempo}%</div><div class="sub">${marcHoy.length} marcaciones registradas</div></div>
-    <div class="card stat"><div class="lbl"><span>Denuncias abiertas</span><span class="icochip chip-red">🛡️</span></div><div class="num">${denunciasAbiertas}</div><div class="sub">de ${DB.complaints.length} recibidas en total</div></div>
-  </div>
-  <div class="grid grid-4" style="margin-bottom:18px;">
-    <div class="card stat"><div class="lbl"><span>Activos asignados</span><span class="icochip chip-blue">💻</span></div><div class="num">${activosAsignados}</div><div class="sub">de ${DB.assets.length} en inventario</div></div>
-    <div class="card stat"><div class="lbl"><span>Encuestas activas</span><span class="icochip chip-violet">📋</span></div><div class="num">${encuestasActivas}</div><div class="sub">de ${DB.surveys.length} publicadas</div></div>
-    <div class="card stat"><div class="lbl"><span>Reconocimientos del mes</span><span class="icochip chip-amber">⭐</span></div><div class="num">${recogMes}</div><div class="sub">cultura de feedback positivo</div></div>
-    <div class="card stat"><div class="lbl"><span>Avance de objetivos</span><span class="icochip chip-green">🎯</span></div><div class="num">${avgObjetivos}%</div><div class="sub">promedio de la compañía</div></div>
+    <div class="card stat"><div class="lbl"><span>Asistencia puntual hoy</span><span class="icochip chip-info">🕒</span></div><div class="num">${pctATiempo}%</div><div class="sub">${marcHoy.length} marcaciones registradas hoy</div></div>
+    <div class="card stat"><div class="lbl"><span>Horas laboradas hoy</span><span class="icochip chip-green">⏱️</span></div><div class="num">${horasHoyTotal.toFixed(1)}h</div><div class="sub">suma de todos los colaboradores</div></div>
+    <div class="card stat"><div class="lbl"><span>Permisos por aprobar</span><span class="icochip chip-amber">📋</span></div><div class="num">${permPend.length}</div><div class="sub">solicitudes pendientes</div></div>
   </div>
   <div class="grid grid-2">
     <div class="card card-pad">
@@ -1274,17 +1108,11 @@ function renderDashboard(){
       </tbody></table></div>` : emptyState('Sin pendientes','No hay solicitudes de permisos o vacaciones esperando aprobación.')}
     </div>
     <div class="card card-pad">
-      <div class="section-title"><h2>Documentos pendientes de firma</h2><span class="hint">${pendFirma.length} documentos</span></div>
-      ${pendFirma.length? `<div class="table-wrap"><table><thead><tr><th>Documento</th><th>Colaborador</th><th></th></tr></thead><tbody>
-        ${pendFirma.map(d=>`<tr><td>${d.nombre}</td><td>${personCell(d.empId)}</td><td><button class="btn btn-ghost btn-sm" onclick="navigate('documentos')">Ver</button></td></tr>`).join('')}
-      </tbody></table></div>` : emptyState('Al día','No hay documentos esperando firma.')}
+      <div class="section-title"><h2>Jornada semanal excedida</h2><span class="hint">Límite ${limiteSemanal}h (Ley 2101)</span></div>
+      ${sobreLimite.length? `<div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Horas esta semana</th></tr></thead><tbody>
+        ${sobreLimite.map(e=>`<tr><td>${personCell(e.id)}</td><td><span class="pill pill-red">${horasSemanaEmpleado(e.id, DEMO_TODAY).toFixed(1)}h</span></td></tr>`).join('')}
+      </tbody></table></div>` : emptyState('Todo en orden','Ningún colaborador activo superó la jornada semanal máxima.')}
     </div>
-  </div>
-  <div class="card card-pad" style="margin-top:16px;">
-    <div class="section-title"><h2>Últimas denuncias</h2><span class="hint">Canal confidencial</span></div>
-    <div class="table-wrap"><table><thead><tr><th>Folio</th><th>Categoría</th><th>Fecha</th><th>Prioridad</th><th>Estado</th></tr></thead><tbody>
-      ${[...DB.complaints].reverse().slice(0,4).map(c=>`<tr><td>${c.folio}</td><td>${c.categoria}</td><td>${fmtDate(c.fecha)}</td><td>${pillPrioridad(c.prioridad)}</td><td>${pillEstadoDenuncia(c.estado)}</td></tr>`).join('')}
-    </tbody></table></div>
   </div>`;
 }
 
@@ -1334,6 +1162,12 @@ function abrirFormEmpleado(id){
     <div class="field-row"><div class="field"><label>Correo</label><input id="f_email" value="${e?e.email:''}"></div>
       <div class="field"><label>Teléfono</label><input id="f_tel" value="${e?e.tel:''}"></div></div>
     <div class="field"><label>Supervisor</label><input id="f_super" value="${e?e.supervisor:''}"></div>
+    <div class="field"><label>Turno / horario</label><select id="f_turno">
+        <option value="">Sin turno asignado (horario por defecto ${TURNO_POR_DEFECTO.bloques[0].inicio}–${TURNO_POR_DEFECTO.bloques[0].fin})</option>
+        ${DB.shifts.map(s=>`<option value="${s.id}" ${e&&e.turnoId===s.id?'selected':''}>${s.nombre} (${s.tipo==='partido'?'Partida':'Continua'}: ${horarioTextoTurno(s)})</option>`).join('')}
+      </select>
+      <div style="font-size:11.5px; color:var(--muted); margin-top:4px;">Con este horario el sistema calcula automáticamente si llegó tarde o salió antes de tiempo. Crea o edita turnos desde Asistencia → Turnos configurados.</div>
+    </div>
     <div class="field">
       <label>Tag NFC (marcación de ingreso y salida)</label>
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
@@ -1393,21 +1227,22 @@ async function guardarEmpleado(id){
     nombre:$('#f_nombre').value.trim(), cedula:$('#f_cedula').value.trim(), cargo:$('#f_cargo').value.trim(), area:$('#f_area').value.trim(),
     contrato:$('#f_contrato').value, ingreso:$('#f_ingreso').value, salario:Number($('#f_salario').value)||0,
     estado:$('#f_estado').value, email:$('#f_email').value.trim(), tel:$('#f_tel').value.trim(), supervisor:$('#f_super').value.trim(),
+    turnoId: $('#f_turno').value || null,
   };
   if(!data.nombre || !data.cargo){ toast('Completa al menos nombre y cargo'); return; }
   let saved;
   if(id){ saved = Object.assign(emp(id), data); }
   else{ saved = {id:uid('emp'), huella:false, puntos:0, ...data}; DB.empleados.push(saved); }
-  const res = await sbGuardarEmpleado(saved); const ok = res===true;
+  const ok = await sbGuardarEmpleado(saved);
   if(ok){ toast(id? 'Colaborador actualizado y guardado' : 'Colaborador creado y guardado'); }
-  else{ toast('⚠️ El colaborador se guardó localmente, pero falló el guardado en la base de datos: '+res); }
+  else{ toast('⚠️ El colaborador se guardó localmente, pero falló el guardado en la base de datos. Revisa la consola.'); }
   if(!state.currentEmp) state.currentEmp = saved.id;
   if(!state.objEmp) state.objEmp = saved.id;
   closeModal(); renderApp();
 }
 function abrirBorrarTodosEmpleados(){
   const body = `
-    <p style="font-size:13px; margin-bottom:12px;">Esta acción borrará <strong>todos</strong> los colaboradores junto con su asistencia, solicitudes de vacaciones/permisos, huellas, objetivos, documentos firmados, reconocimientos, solicitudes de beneficios y adelantos — tanto en esta pantalla como en la base de datos de Supabase. Los activos de inventario no se borran, solo quedan liberados (sin asignar). No se puede deshacer.</p>
+    <p style="font-size:13px; margin-bottom:12px;">Esta acción borrará <strong>todos</strong> los colaboradores y su asistencia asociada, tanto en esta pantalla como en la base de datos de Supabase. No se puede deshacer.</p>
     <div class="field"><label>Escribe la contraseña para confirmar</label><input type="password" id="bt_pass" placeholder="••••" maxlength="4" autocomplete="off"></div>`;
   const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-danger" onclick="confirmarBorrarTodosEmpleados()">Borrar todo</button>`;
   openModal('Borrar todos los registros de colaboradores', body, foot);
@@ -1418,13 +1253,7 @@ async function confirmarBorrarTodosEmpleados(){
   if(pass !== '0000'){ toast('Contraseña incorrecta'); return; }
   try{
     await sbBorrarTodosLosEmpleados();
-    /* Limpia en memoria todo lo que dependía de los colaboradores eliminados,
-       para que no queden referencias "fantasma" (empId apuntando a nadie)
-       en ninguna pestaña de esta misma sesión. */
-    DB.empleados = []; DB.attendance = []; DB.leaveRequests = []; DB.huellas = [];
-    DB.objectives = []; DB.documents = []; DB.recognitions = [];
-    DB.benefitRequests = []; DB.advances = [];
-    DB.assets.forEach(a=>{ a.estado='Disponible'; a.asignadoA=null; a.fecha=null; });
+    DB.empleados = []; DB.attendance = [];
     DB.payrollRuns.forEach(r=> r.detalles = []);
     state.currentEmp = null; state.objEmp = null;
     closeModal(); toast('Todos los registros de colaboradores fueron eliminados'); renderApp();
@@ -1434,14 +1263,12 @@ async function confirmarBorrarTodosEmpleados(){
 }
 function resumenMensual(empId){
   const regs = DB.attendance.filter(a=>a.empId===empId && a.fecha.slice(0,7)===DEMO_TODAY.slice(0,7));
-  const run = runActivo();
-  const det = run? run.detalles.find(d=>d.empId===empId) : null;
-  const horasExtra = det? (det.hed+det.hen+det.hefd+det.hefn) : 0;
+  const horasMes = regs.reduce((s,a)=> s + horasDeRegistro(a).horas, 0);
   return {
     asistencias: regs.filter(a=>a.entrada).length,
     inasistencias: regs.filter(a=>a.estado==='Ausente').length,
     atrasos: regs.filter(a=>a.estado==='Tarde').length,
-    horasExtra,
+    horasMes,
   };
 }
 function verPerfil(empId){
@@ -1466,6 +1293,7 @@ function verPerfil(empId){
         <tr><td style="font-weight:600;">Contrato</td><td>${e.contrato}</td></tr>
         <tr><td style="font-weight:600;">Área</td><td>${e.area}</td></tr>
         <tr><td style="font-weight:600;">Supervisor</td><td>${e.supervisor||'—'}</td></tr>
+        <tr><td style="font-weight:600;">Turno / horario</td><td>${turnoDeEmpleado(e.id).nombre} (${horarioTextoTurno(turnoDeEmpleado(e.id))})</td></tr>
         <tr><td style="font-weight:600;">Email</td><td>${e.email}</td></tr>
         <tr><td style="font-weight:600;">Teléfono</td><td>${e.tel}</td></tr>
       </tbody></table></div>
@@ -1476,12 +1304,11 @@ function verPerfil(empId){
         <div class="card stat" style="padding:12px;"><div class="lbl">Asistencias</div><div class="num" style="font-size:20px;">${r.asistencias}</div></div>
         <div class="card stat" style="padding:12px;"><div class="lbl">Inasistencias</div><div class="num" style="font-size:20px;">${r.inasistencias}</div></div>
         <div class="card stat" style="padding:12px;"><div class="lbl">Atrasos</div><div class="num" style="font-size:20px;">${r.atrasos}</div></div>
-        <div class="card stat" style="padding:12px;"><div class="lbl">Horas extra</div><div class="num" style="font-size:20px;">${r.horasExtra}</div></div>
+        <div class="card stat" style="padding:12px;"><div class="lbl">Horas trabajadas (mes)</div><div class="num" style="font-size:20px;">${r.horasMes.toFixed(1)}h</div></div>
       </div>
       <h4 style="font-size:13px; margin-bottom:10px;">Registro del día</h4>
       <div class="table-wrap" style="margin-bottom:16px;"><table><tbody>
-        <tr><td style="font-weight:600; width:40%;">Horario asignado</td><td>${formatoHorario(horarioDeEmpleado(e))} <button class="btn btn-ghost btn-sm" style="margin-left:6px;" onclick="abrirHorarioEmpleado('${e.id}')">Configurar</button></td></tr>
-        <tr><td style="font-weight:600;">Marcaciones</td><td>${hoy? marcasDeRegistro(hoy).map(m=>`${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}`).join(' · ')||'—' : '—'}</td></tr>
+        <tr><td style="font-weight:600; width:40%;">Marcaciones</td><td>${hoy? marcasDeRegistro(hoy).map(m=>`${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}`).join(' · ')||'—' : '—'}</td></tr>
         <tr><td style="font-weight:600;">Horas hoy</td><td>${hoy? horasDeRegistro(hoy).horas.toFixed(1)+'h' : '—'}</td></tr>
         <tr><td style="font-weight:600;">Horas esta semana</td><td>${horasSemanaEmpleado(e.id, DEMO_TODAY).toFixed(1)}h / ${CFG.horasSemanalesMax||42}h</td></tr>
       </tbody></table></div>
@@ -1489,7 +1316,6 @@ function verPerfil(empId){
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn btn-primary btn-sm" onclick="closeModal(); abrirFormEmpleado('${e.id}')">Editar trabajo</button>
         <button class="btn btn-ghost btn-sm" onclick="renovarContrato('${e.id}')">Renovar contrato</button>
-        <button class="btn btn-ghost btn-sm" onclick="generarDocumentoDesdePerfil('${e.id}')">Generar documento</button>
         ${e.estado==='Activo'? `<button class="btn btn-danger btn-sm" onclick="terminarTrabajo('${e.id}')">Terminar trabajo</button>` : `<button class="btn btn-teal btn-sm" onclick="reactivarTrabajo('${e.id}')">Reactivar</button>`}
       </div>
     </div>
@@ -1497,93 +1323,7 @@ function verPerfil(empId){
   const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`;
   openModal('Perfil del colaborador', body, foot, true);
 }
-async function registrarHuella(empId){ const e=emp(empId); e.huella=true; const res = await sbGuardarEmpleado(e); const ok = res===true; toast(ok? 'Huella registrada correctamente' : '⚠️ La huella se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); verPerfil(empId); }
-/* ---------------------------------------------------------
-   HORARIO INDIVIDUAL DE UN COLABORADOR: puede usar un turno ya
-   creado, o un horario personalizado solo para él (ej. "Jorge
-   entra 8-12 y 2-5"), continuo o segmentado. Mismo patrón de
-   estado temporal + re-render que el editor de turnos.
-   --------------------------------------------------------- */
-function abrirHorarioEmpleado(empId){
-  const e = emp(empId); if(!e) return;
-  const modo = e.horarioPropio? 'personalizado' : (e.turnoId? 'turno' : 'ninguno');
-  const h = e.horarioPropio || (e.turnoId? ((DB.shifts.find(s=>s.id===e.turnoId)||{}).horario) : null) || {};
-  state.horarioEmpTemp = {
-    empId,
-    modo,
-    turnoId: e.turnoId || (DB.shifts[0]? DB.shifts[0].id : null),
-    tipo: h.tipo || 'continuo',
-    inicio: h.inicio || '08:00',
-    fin: h.fin || '17:00',
-    bloques: (h.bloques && h.bloques.length)? h.bloques.map(b=>({...b})) : [{inicio:'08:00',fin:'12:00'},{inicio:'14:00',fin:'17:00'}],
-    toleranciaMin: h.toleranciaMin!=null? h.toleranciaMin : 5,
-  };
-  renderModalHorarioEmpleado();
-}
-function renderModalHorarioEmpleado(){
-  const s = state.horarioEmpTemp; const e = emp(s.empId); if(!e){ closeModal(); return; }
-  const horasDia = horasEsperadasHorario(s.tipo==='segmentado'? {tipo:'segmentado', bloques:s.bloques} : {tipo:'continuo', inicio:s.inicio, fin:s.fin});
-  const body = `
-    <p style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">Define el horario esperado de <strong>${e.nombre}</strong> para calcular automáticamente si una marcación de entrada es tardía.</p>
-    <div class="field"><label>¿Cómo se define su horario?</label>
-      <select onchange="state.horarioEmpTemp.modo=this.value; renderModalHorarioEmpleado();">
-        <option value="ninguno" ${s.modo==='ninguno'?'selected':''}>Sin definir</option>
-        <option value="turno" ${s.modo==='turno'?'selected':''}>Usar un turno existente</option>
-        <option value="personalizado" ${s.modo==='personalizado'?'selected':''}>Horario personalizado para este colaborador</option>
-      </select>
-    </div>
-    ${s.modo==='turno'? (DB.shifts.length? `
-    <div class="field"><label>Turno</label>
-      <select onchange="state.horarioEmpTemp.turnoId=this.value; renderModalHorarioEmpleado();">
-        ${DB.shifts.map(sh=>`<option value="${sh.id}" ${s.turnoId===sh.id?'selected':''}>${sh.nombre} — ${formatoHorario(sh.horario)}</option>`).join('')}
-      </select>
-    </div>` : `<p style="font-size:12px; color:var(--danger);">Aún no has creado ningún turno. Crea uno primero desde "Asistencia" → "+ Nuevo turno", o usa un horario personalizado.</p>`) : ''}
-    ${s.modo==='personalizado'? `
-    <div class="field"><label>Tipo de jornada</label>
-      <select onchange="state.horarioEmpTemp.tipo=this.value; renderModalHorarioEmpleado();">
-        <option value="continuo" ${s.tipo==='continuo'?'selected':''}>Continua (sin descanso registrado)</option>
-        <option value="segmentado" ${s.tipo==='segmentado'?'selected':''}>Segmentada (ej. mañana y tarde, con descanso)</option>
-      </select>
-    </div>
-    ${s.tipo==='continuo'? `
-    <div class="field-row">
-      <div class="field"><label>Hora de entrada</label><input type="time" value="${s.inicio}" onchange="state.horarioEmpTemp.inicio=this.value; renderModalHorarioEmpleado();"></div>
-      <div class="field"><label>Hora de salida</label><input type="time" value="${s.fin}" onchange="state.horarioEmpTemp.fin=this.value; renderModalHorarioEmpleado();"></div>
-    </div>` : `
-    ${s.bloques.map((b,i)=>`
-    <div class="field-row" style="align-items:flex-end;">
-      <div class="field"><label>${i===0?'Entrada mañana':i===1?'Entrada tarde (tras el descanso)':'Entrada bloque '+(i+1)}</label><input type="time" value="${b.inicio}" onchange="state.horarioEmpTemp.bloques[${i}].inicio=this.value; renderModalHorarioEmpleado();"></div>
-      <div class="field"><label>${i===0?'Salida (inicio descanso)':'Salida'}</label><input type="time" value="${b.fin}" onchange="state.horarioEmpTemp.bloques[${i}].fin=this.value; renderModalHorarioEmpleado();"></div>
-      ${s.bloques.length>1? `<button type="button" class="btn btn-ghost btn-sm" onclick="quitarBloqueHorarioEmp(${i})">🗑️</button>`:''}
-    </div>`).join('')}
-    <button type="button" class="btn btn-ghost btn-sm" onclick="agregarBloqueHorarioEmp()">+ Agregar otro bloque</button>
-    `}
-    <div class="field"><label>Tolerancia antes de marcar "Tarde" (minutos)</label><input type="number" min="0" value="${s.toleranciaMin}" onchange="state.horarioEmpTemp.toleranciaMin=Number(this.value)||0"></div>
-    <p style="font-size:12px; color:var(--muted); margin-top:4px;">Jornada total: <strong>${horasDia.toFixed(1)}h/día</strong>.</p>
-    ` : ''}`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarHorarioEmpleado()">Guardar horario</button>`;
-  openModal('Horario laboral — '+e.nombre, body, foot);
-}
-function agregarBloqueHorarioEmp(){ state.horarioEmpTemp.bloques.push({inicio:'14:00', fin:'17:00'}); renderModalHorarioEmpleado(); }
-function quitarBloqueHorarioEmp(i){ state.horarioEmpTemp.bloques.splice(i,1); renderModalHorarioEmpleado(); }
-async function guardarHorarioEmpleado(){
-  const s = state.horarioEmpTemp;
-  const e = emp(s.empId); if(!e) return;
-  if(s.modo==='ninguno'){ e.horarioPropio=null; e.turnoId=null; }
-  else if(s.modo==='turno'){
-    if(!s.turnoId){ toast('Selecciona un turno'); return; }
-    e.turnoId=s.turnoId; e.horarioPropio=null;
-  } else {
-    const horario = s.tipo==='segmentado'
-      ? {tipo:'segmentado', bloques:s.bloques.map(b=>({inicio:b.inicio, fin:b.fin})), toleranciaMin:s.toleranciaMin}
-      : {tipo:'continuo', inicio:s.inicio, fin:s.fin, toleranciaMin:s.toleranciaMin};
-    e.horarioPropio = horario; e.turnoId=null;
-  }
-  const res = await sbGuardarEmpleado(e); const ok = res===true;
-  state.horarioEmpTemp = null; closeModal();
-  toast(ok? 'Horario guardado' : '⚠️ El horario se guardó localmente, pero falló el guardado en la base de datos.'+(ok?'':' — '+res));
-  verPerfil(e.id);
-}
+async function registrarHuella(empId){ const e=emp(empId); e.huella=true; const ok=await sbGuardarEmpleado(e); toast(ok? 'Huella registrada correctamente' : '⚠️ La huella se guardó localmente, pero falló el guardado en la base de datos.'); verPerfil(empId); }
 function renovarContrato(empId){
   const e = emp(empId);
   DB.documents.push({id:uid('doc'), empId, nombre:'Otrosí — renovación de contrato', tipo:'Otrosí', fecha:DEMO_TODAY, estado:'Pendiente', firmante:null, firmaFecha:null});
@@ -1593,14 +1333,14 @@ async function terminarTrabajo(empId){
   const e = emp(empId);
   if(!confirm(`¿Confirmas terminar el vínculo laboral de ${e.nombre}?`)) return;
   e.estado='Inactivo';
-  const res = await sbActualizarEstadoEmpleado(e.id,'Inactivo'); const ok = res===true;
-  toast(ok? 'Colaborador marcado como inactivo' : '⚠️ Se marcó como inactivo localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res));
+  const ok = await sbActualizarEstadoEmpleado(e.id,'Inactivo');
+  toast(ok? 'Colaborador marcado como inactivo' : '⚠️ Se marcó como inactivo localmente, pero falló el guardado en la base de datos.');
   closeModal(); if(state.view==='empleados') renderApp();
 }
 async function reactivarTrabajo(empId){
   const e=emp(empId); e.estado='Activo';
-  const res = await sbActualizarEstadoEmpleado(e.id,'Activo'); const ok = res===true;
-  toast(ok? 'Colaborador reactivado' : '⚠️ Se reactivó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res));
+  const ok = await sbActualizarEstadoEmpleado(e.id,'Activo');
+  toast(ok? 'Colaborador reactivado' : '⚠️ Se reactivó localmente, pero falló el guardado en la base de datos.');
   closeModal(); if(state.view==='empleados') renderApp();
 }
 function generarDocumentoDesdePerfil(empId){
@@ -1609,245 +1349,10 @@ function generarDocumentoDesdePerfil(empId){
 }
 
 /* =========================================================
-   3. NÓMINA (+ liquidación detallada descargable)
-   ========================================================= */
-function calcularDetalle(det, e){
-  const valorDia = e.salario/30;
-  const valorHora = e.salario/CFG.horasMes;
-  const salarioProp = valorDia * det.dias;
-  const extraHED = valorHora * det.hed * (1+CFG.rHED/100);
-  const extraHEN = valorHora * det.hen * (1+CFG.rHEN/100);
-  const extraHEFD = valorHora * det.hefd * (1+CFG.rHEFD/100);
-  const extraHEFN = valorHora * det.hefn * (1+CFG.rHEFN/100);
-  const auxTr = (e.salario <= CFG.smmlv*2) ? CFG.auxTransporte * (det.dias/30) : 0;
-  const devengado = salarioProp + extraHED + extraHEN + extraHEFD + extraHEFN + auxTr + det.bonif + det.otros;
-  const salud = salarioProp * CFG.saludPct/100;
-  const pension = salarioProp * CFG.pensionPct/100;
-  const deducciones = salud + pension + det.otrasDed;
-  det.salarioProp=Math.round(salarioProp); det.extraTotal=Math.round(extraHED+extraHEN+extraHEFD+extraHEFN);
-  det.auxTr=Math.round(auxTr); det.devengado=Math.round(devengado); det.salud=Math.round(salud); det.pension=Math.round(pension);
-  det.deducciones=Math.round(deducciones); det.neto=Math.round(devengado-deducciones);
-
-  /* Prestaciones sociales y aportes patronales — no aplican a contratos
-     por prestación de servicios (no generan relación laboral subordinada
-     según el CST, art. 34 y ss.) */
-  const esIndependiente = e.contrato === 'Prestación de servicios';
-  const diasAno = det.dias; // días del período actual, base para la provisión mensual proporcional
-  if(esIndependiente){
-    det.cesantias=0; det.interesesCesantias=0; det.prima=0; det.vacaciones=0; det.aportesPatronales=0;
-  } else {
-    const baseCesPrima = salarioProp + auxTr; // el auxilio de transporte sí integra la base de cesantías y prima
-    const cesantias = baseCesPrima * diasAno / 360 * (CFG.pctCesantias/8.33); // ajustable si cambia la tasa
-    const interesesCesantias = cesantias * diasAno * (CFG.pctIntCesantias/100) / 360;
-    const prima = baseCesPrima * diasAno / 360 * (CFG.pctPrima/8.33);
-    const vacaciones = salarioProp * diasAno / 720 * (CFG.pctVacaciones/4.17); // las vacaciones no llevan auxilio de transporte
-    const factorExon = CFG.exoneracion && (e.salario < CFG.smmlv*10) ? 0 : 1;
-    const arl = salarioProp * CFG.pctArl/100;
-    const caja = salarioProp * CFG.pctCaja/100;
-    const sena = salarioProp * CFG.pctSena/100 * factorExon;
-    const icbf = salarioProp * CFG.pctIcbf/100 * factorExon;
-    const saludPatronal = salarioProp * CFG.pctSaludPatronal/100 * factorExon;
-    const pensionPatronal = salarioProp * CFG.pctPensionPatronal/100;
-    const aportesPatronales = arl + caja + sena + icbf + saludPatronal + pensionPatronal;
-    det.cesantias=Math.round(cesantias); det.interesesCesantias=Math.round(interesesCesantias);
-    det.prima=Math.round(prima); det.vacaciones=Math.round(vacaciones); det.aportesPatronales=Math.round(aportesPatronales);
-  }
-  det.costoEmpresa = Math.round(devengado + det.cesantias+det.interesesCesantias+det.prima+det.vacaciones+det.aportesPatronales);
-  return det;
-}
-function runActivo(){ return DB.payrollRuns.find(r=>r.id===state.payrollOpenRun) || DB.payrollRuns[DB.payrollRuns.length-1]; }
-
-function renderNomina(){
-  const run = runActivo();
-  if(!run){
-    return `
-    <div class="section-title"><h1 style="font-size:0;"></h1>
-      <button class="btn btn-primary" onclick="abrirNuevaLiquidacion()">+ Nueva liquidación</button>
-    </div>
-    ${emptyState('Sin liquidaciones de nómina','Genera la primera liquidación para empezar a calcular la nómina de tus colaboradores.')}`;
-  }
-  const cerrada = run.estado==='Cerrada';
-  const totDev = run.detalles.reduce((s,d)=>s+d.devengado,0);
-  const totDed = run.detalles.reduce((s,d)=>s+d.deducciones,0);
-  const totNet = run.detalles.reduce((s,d)=>s+d.neto,0);
-  return `
-  <div class="section-title">
-    <div style="display:flex; align-items:center; gap:10px;">
-      <select onchange="state.payrollOpenRun=this.value; renderApp();" style="padding:8px 10px; border:1px solid var(--line); border-radius:8px;">
-        ${DB.payrollRuns.map(r=>`<option value="${r.id}" ${r.id===run.id?'selected':''}>${r.periodo} — ${r.estado}</option>`).join('')}
-      </select>
-      ${cerrada? '<span class="pill pill-green">Cerrada y pagada</span>' : '<span class="pill pill-amber">Borrador</span>'}
-    </div>
-    <div style="display:flex; gap:10px;">
-      <button class="btn btn-ghost" onclick="exportCSV('nomina_${run.periodo.replace(/[^a-z0-9]/gi,'_')}.csv', ['Colaborador','Días','H.Extra Diurna','H.Extra Nocturna','H.Festiva Diurna','H.Festiva Nocturna','Bonificaciones','Otros devengos','Otras deducciones','Devengado','Deducciones','Neto a pagar'], run.detalles.map(d=>[empNombre(d.empId),d.dias,d.hed,d.hen,d.hefd,d.hefn,d.bonif,d.otros,d.otrasDed,d.devengado,d.deducciones,d.neto]))">⬇ Exportar CSV</button>
-      <button class="btn btn-ghost" onclick="abrirNuevaLiquidacion()">+ Nueva liquidación</button>
-      ${!cerrada? `<button class="btn btn-teal" onclick="cerrarLiquidacion('${run.id}')">Aprobar y cerrar</button>` : ''}
-    </div>
-  </div>
-  <div class="grid grid-3" style="margin-bottom:16px;">
-    <div class="card stat"><div class="lbl">Total devengado</div><div class="num" style="font-size:19px;">${fmtCOP(totDev)}</div></div>
-    <div class="card stat"><div class="lbl">Total deducciones</div><div class="num" style="font-size:19px;">${fmtCOP(totDed)}</div></div>
-    <div class="card stat"><div class="lbl">Neto a pagar</div><div class="num" style="font-size:19px;">${fmtCOP(totNet)}</div></div>
-  </div>
-  <div class="table-wrap"><table>
-    <thead><tr>
-      <th>Colaborador</th><th class="num-cell">Días</th><th class="num-cell">H. extra diurna</th><th class="num-cell">H. extra nocturna</th>
-      <th class="num-cell">H. festiva diurna</th><th class="num-cell">H. festiva nocturna</th><th class="num-cell">Bonificaciones</th>
-      <th class="num-cell">Otros devengos</th><th class="num-cell">Otras deducciones</th>
-      <th class="num-cell">Devengado</th><th class="num-cell">Deducciones</th><th class="num-cell">Neto a pagar</th><th></th>
-    </tr></thead>
-    <tbody>
-      ${run.detalles.map(d=>{
-        const dis = cerrada? 'disabled' : '';
-        return `<tr>
-          <td>${personCell(d.empId)}</td>
-          <td class="num-cell"><input ${dis} class="tbl-input" type="number" value="${d.dias}" onchange="actualizarLinea('${run.id}','${d.empId}','dias',this.value)"></td>
-          <td class="num-cell"><input ${dis} class="tbl-input" type="number" value="${d.hed}" onchange="actualizarLinea('${run.id}','${d.empId}','hed',this.value)"></td>
-          <td class="num-cell"><input ${dis} class="tbl-input" type="number" value="${d.hen}" onchange="actualizarLinea('${run.id}','${d.empId}','hen',this.value)"></td>
-          <td class="num-cell"><input ${dis} class="tbl-input" type="number" value="${d.hefd}" onchange="actualizarLinea('${run.id}','${d.empId}','hefd',this.value)"></td>
-          <td class="num-cell"><input ${dis} class="tbl-input" type="number" value="${d.hefn}" onchange="actualizarLinea('${run.id}','${d.empId}','hefn',this.value)"></td>
-          <td class="num-cell"><input ${dis} class="tbl-input" style="width:88px" type="number" value="${d.bonif}" onchange="actualizarLinea('${run.id}','${d.empId}','bonif',this.value)"></td>
-          <td class="num-cell"><input ${dis} class="tbl-input" style="width:88px" type="number" value="${d.otros}" onchange="actualizarLinea('${run.id}','${d.empId}','otros',this.value)"></td>
-          <td class="num-cell"><input ${dis} class="tbl-input" style="width:88px" type="number" value="${d.otrasDed}" onchange="actualizarLinea('${run.id}','${d.empId}','otrasDed',this.value)"></td>
-          <td class="num-cell" id="dev-${run.id}-${d.empId}">${fmtCOP(d.devengado)}</td>
-          <td class="num-cell" id="ded-${run.id}-${d.empId}">${fmtCOP(d.deducciones)}</td>
-          <td class="num-cell" id="net-${run.id}-${d.empId}"><strong>${fmtCOP(d.neto)}</strong></td>
-          <td><button class="btn btn-ghost btn-sm" onclick="verLiquidacion('${run.id}','${d.empId}')">Ver</button></td>
-        </tr>`;
-      }).join('')}
-    </tbody>
-  </table></div>
-  <p style="margin-top:10px; font-size:12px; color:var(--muted);">Cálculo basado en los parámetros legales configurables: auxilio de transporte hasta 2 SMMLV, aportes de salud y pensión, y recargos de horas extra. Ajusta estos valores en <a style="color:var(--primary-2); cursor:pointer;" onclick="navigate('parametros')">Parámetros legales</a> cada vez que cambie la normativa vigente.</p>`;
-}
-async function actualizarLinea(runId, empId, campo, valor){
-  const run = DB.payrollRuns.find(r=>r.id===runId);
-  const det = run.detalles.find(d=>d.empId===empId);
-  det[campo] = Number(valor)||0;
-  calcularDetalle(det, emp(empId));
-  $(`#dev-${runId}-${empId}`).textContent = fmtCOP(det.devengado);
-  $(`#ded-${runId}-${empId}`).textContent = fmtCOP(det.deducciones);
-  $(`#net-${runId}-${empId}`).innerHTML = `<strong>${fmtCOP(det.neto)}</strong>`;
-  const res = await sbGuardarNomina(run); const ok = res===true;
-  if(!ok) toast('⚠️ Este cambio se guardó localmente, pero falló el guardado en la base de datos.'+' — '+res);
-}
-function abrirNuevaLiquidacion(){
-  const body = `
-    <div class="field"><label>Nombre del periodo</label><input id="np_periodo" value="Septiembre 2026 (1-30)"></div>
-    <div class="field"><label>Fecha de pago</label><input type="date" id="np_fecha" value="2026-09-30"></div>
-    <p style="font-size:12.5px; color:var(--muted);">Se generará una línea de liquidación para cada colaborador activo, con 30 días trabajados por defecto. Podrás ajustar horas extra, bonificaciones y deducciones antes de cerrarla.</p>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="crearLiquidacion()">Generar</button>`;
-  openModal('Nueva liquidación de nómina', body, foot);
-}
-async function crearLiquidacion(){
-  const periodo = $('#np_periodo').value.trim() || 'Nuevo periodo';
-  const fechaPago = $('#np_fecha').value;
-  const run = {id:uid('run'), periodo, fechaPago, estado:'Borrador', detalles:[]};
-  DB.empleados.filter(e=>e.estado==='Activo').forEach(e=>{
-    const det = {empId:e.id, dias:30, hed:0, hen:0, hefd:0, hefn:0, bonif:0, otros:0, otrasDed:0};
-    calcularDetalle(det, e);
-    run.detalles.push(det);
-  });
-  DB.payrollRuns.push(run); state.payrollOpenRun = run.id;
-  const res = await sbGuardarNomina(run); const ok = res===true;
-  closeModal(); toast(ok? 'Liquidación generada' : '⚠️ La liquidación se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-async function cerrarLiquidacion(runId){
-  const run = DB.payrollRuns.find(r=>r.id===runId); run.estado='Cerrada'; renderApp();
-  const res = await sbGuardarNomina(run); const ok = res===true;
-  toast(ok? 'Nómina aprobada y cerrada' : '⚠️ Se cerró localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res));
-}
-
-function verLiquidacion(runId, empId){
-  const run = DB.payrollRuns.find(r=>r.id===runId);
-  const det = run.detalles.find(d=>d.empId===empId);
-  const e = emp(empId);
-  const diasNoTrab = Math.max(0, 30-det.dias);
-  const body = `
-    <div class="card-bar" style="margin:-20px -20px 16px; border-radius:14px 14px 0 0;">Liquidación — ${run.periodo}</div>
-    <div style="display:flex; gap:16px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
-      <div class="hex-ring"><div class="hex hex-md">${iniciales(e.nombre)}</div></div>
-      <div style="flex:1; min-width:220px; font-size:12.5px;">
-        <strong>Sr(a):</strong> ${e.nombre} &nbsp; <strong>Cédula:</strong> ${e.cedula}<br>
-        <strong>Empresa:</strong> ${CFG.companyName} &nbsp; <strong>Contrato:</strong> ${e.contrato}<br>
-        <strong>Sueldo base:</strong> ${fmtCOP(e.salario)} &nbsp; <strong>Días trabajados:</strong> ${det.dias} &nbsp; <strong>Horas no trabajadas:</strong> ${diasNoTrab*8}
-      </div>
-    </div>
-    <div class="grid grid-2">
-      <div>
-        <div class="card-bar" style="font-size:12.5px; padding:9px 14px;">Haberes imponibles</div>
-        <div class="table-wrap" style="border-radius:0 0 8px 8px; border-top:none;"><table><tbody>
-          <tr><td>Sueldo proporcional</td><td class="num-cell">${fmtCOP(det.salarioProp)}</td></tr>
-          <tr><td>Horas extra y recargos</td><td class="num-cell">${fmtCOP(det.extraTotal)}</td></tr>
-          <tr><td>Bonificaciones</td><td class="num-cell">${fmtCOP(det.bonif)}</td></tr>
-          <tr><td>Otros devengos</td><td class="num-cell">${fmtCOP(det.otros)}</td></tr>
-        </tbody></table></div>
-        <div class="card-bar" style="font-size:12.5px; padding:9px 14px; margin-top:10px;">Haberes no imponibles</div>
-        <div class="table-wrap" style="border-radius:0 0 8px 8px; border-top:none;"><table><tbody>
-          <tr><td>Auxilio de transporte</td><td class="num-cell">${fmtCOP(det.auxTr)}</td></tr>
-        </tbody></table></div>
-      </div>
-      <div>
-        <div class="card-bar" style="font-size:12.5px; padding:9px 14px; background:linear-gradient(135deg,var(--danger),#B91C1C);">Descuentos legales</div>
-        <div class="table-wrap" style="border-radius:0 0 8px 8px; border-top:none;"><table><tbody>
-          <tr><td>Salud (${CFG.saludPct}%)</td><td class="num-cell">${fmtCOP(det.salud)}</td></tr>
-          <tr><td>Pensión (${CFG.pensionPct}%)</td><td class="num-cell">${fmtCOP(det.pension)}</td></tr>
-        </tbody></table></div>
-        <div class="card-bar" style="font-size:12.5px; padding:9px 14px; margin-top:10px; background:linear-gradient(135deg,var(--danger),#B91C1C);">Otros descuentos</div>
-        <div class="table-wrap" style="border-radius:0 0 8px 8px; border-top:none;"><table><tbody>
-          <tr><td>Otras deducciones</td><td class="num-cell">${fmtCOP(det.otrasDed)}</td></tr>
-        </tbody></table></div>
-      </div>
-    </div>
-    <div class="card-bar" style="margin-top:16px; justify-content:center; font-size:16px; background:linear-gradient(135deg,var(--success),#15803D);">Líquido a recibir · ${fmtCOP(det.neto)}</div>
-    ${e.contrato==='Prestación de servicios'? `<p style="font-size:11.5px; color:var(--muted); margin-top:10px;">Este contrato es por prestación de servicios: no genera prestaciones sociales ni aportes patronales, según el Código Sustantivo del Trabajo.</p>` : `
-    <div class="card-bar" style="font-size:12.5px; padding:9px 14px; margin-top:16px;">Provisión de prestaciones sociales del período</div>
-    <div class="table-wrap" style="border-radius:0 0 8px 8px; border-top:none;"><table><tbody>
-      <tr><td>Cesantías (${CFG.pctCesantias}%)</td><td class="num-cell">${fmtCOP(det.cesantias)}</td></tr>
-      <tr><td>Intereses de cesantías (${CFG.pctIntCesantias}% anual)</td><td class="num-cell">${fmtCOP(det.interesesCesantias)}</td></tr>
-      <tr><td>Prima de servicios (${CFG.pctPrima}%)</td><td class="num-cell">${fmtCOP(det.prima)}</td></tr>
-      <tr><td>Vacaciones (${CFG.pctVacaciones}%)</td><td class="num-cell">${fmtCOP(det.vacaciones)}</td></tr>
-    </tbody></table></div>
-    <div class="card-bar" style="font-size:12.5px; padding:9px 14px; margin-top:10px;">Aportes patronales a seguridad social y parafiscales${CFG.exoneracion?' (con exoneración Ley 1607/2012)':''}</div>
-    <div class="table-wrap" style="border-radius:0 0 8px 8px; border-top:none;"><table><tbody>
-      <tr><td>ARL, caja de compensación, salud, pensión, SENA e ICBF</td><td class="num-cell">${fmtCOP(det.aportesPatronales)}</td></tr>
-    </tbody></table></div>
-    <div class="card-bar" style="margin-top:10px; justify-content:center; font-size:14px; background:linear-gradient(135deg,var(--primary),var(--primary-3));">Costo total para la empresa · ${fmtCOP(det.costoEmpresa)}</div>`}`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button><button class="btn btn-primary" onclick="descargarLiquidacion('${runId}','${empId}')">⬇ Descargar</button>`;
-  openModal('Detalle de liquidación', body, foot, true);
-}
-function descargarLiquidacion(runId, empId){
-  const run = DB.payrollRuns.find(r=>r.id===runId); const det = run.detalles.find(d=>d.empId===empId); const e = emp(empId);
-  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación ${e.nombre} — ${run.periodo}</title>
-  <style>body{font-family:Arial,sans-serif; padding:30px; color:#1F2A44;} h1{font-size:18px;} table{width:100%; border-collapse:collapse; margin-bottom:16px;} td{padding:6px 8px; border-bottom:1px solid #E3E8F0;} .tot{font-weight:bold; background:#EEF1F7;}</style>
-  </head><body>
-  <h1>Liquidación de nómina — ${run.periodo}</h1>
-  <p><strong>Colaborador:</strong> ${e.nombre} · <strong>Cédula:</strong> ${e.cedula} · <strong>Cargo:</strong> ${e.cargo}</p>
-  <p><strong>Empresa:</strong> ${CFG.companyName} · <strong>Contrato:</strong> ${e.contrato} · <strong>Días trabajados:</strong> ${det.dias}</p>
-  <table>
-    <tr><td>Sueldo proporcional</td><td>${fmtCOP(det.salarioProp)}</td></tr>
-    <tr><td>Horas extra y recargos</td><td>${fmtCOP(det.extraTotal)}</td></tr>
-    <tr><td>Bonificaciones</td><td>${fmtCOP(det.bonif)}</td></tr>
-    <tr><td>Otros devengos</td><td>${fmtCOP(det.otros)}</td></tr>
-    <tr><td>Auxilio de transporte</td><td>${fmtCOP(det.auxTr)}</td></tr>
-    <tr><td>Salud (${CFG.saludPct}%)</td><td>-${fmtCOP(det.salud)}</td></tr>
-    <tr><td>Pensión (${CFG.pensionPct}%)</td><td>-${fmtCOP(det.pension)}</td></tr>
-    <tr><td>Otras deducciones</td><td>-${fmtCOP(det.otrasDed)}</td></tr>
-    <tr class="tot"><td>Líquido a recibir</td><td>${fmtCOP(det.neto)}</td></tr>
-  </table>
-  <p style="font-size:11px; color:#67748E;">Documento generado por Bitácora el ${fmtDate(DEMO_TODAY)}.</p>
-  </body></html>`;
-  const blob = new Blob([html], {type:'text/html;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download=`liquidacion_${e.nombre.replace(/\s+/g,'_')}_${run.periodo.replace(/[^a-z0-9]/gi,'_')}.html`; document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(url),2000);
-  toast('Liquidación descargada');
-}
-
-/* =========================================================
    4. ASISTENCIA
    ========================================================= */
 function renderAsistencia(){
-  const marcHoy = DB.attendance.filter(a=>a.fecha===DEMO_TODAY).sort((a,b)=>empNombre(a.empId).localeCompare(empNombre(b.empId)));
+  const marcHoy = DB.attendance.filter(a=>a.fecha===DEMO_TODAY).sort((a,b)=>emp(a.empId).nombre.localeCompare(emp(b.empId).nombre));
   const fueraHoy = DB.leaveRequests.filter(l=>l.estado==='Aprobado' && l.inicio<=DEMO_TODAY && l.fin>=DEMO_TODAY);
   const pendientes = DB.leaveRequests.filter(l=>l.estado==='Pendiente');
   const limiteSemanal = CFG.horasSemanalesMax||42;
@@ -1856,21 +1361,27 @@ function renderAsistencia(){
     <div class="card card-pad">
       <div class="section-title"><h2>Marcaciones de hoy</h2><button class="btn btn-primary btn-sm" onclick="abrirMarcacion()">+ Registrar marcación</button></div>
       <p class="hint" style="margin:-6px 0 12px;">Cada colaborador puede marcar varios ingresos y salidas en el mismo día; las horas se suman automáticamente. Jornada máxima legal: <strong>${limiteSemanal}h/semana</strong> (Ley 2101 de 2021).</p>
-      <div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Marcaciones de hoy</th><th>Horas hoy</th><th>Horas semana</th><th>Estado</th></tr></thead><tbody>
+      <div class="table-wrap"><table><thead><tr><th>Colaborador</th><th>Turno</th><th>Marcaciones de hoy</th><th>Horas hoy</th><th>Jornada</th><th>Horas semana</th><th>Estado</th></tr></thead><tbody>
         ${marcHoy.map(a=>{
           const horasHoy = horasDeRegistro(a).horas;
           const horasSemana = horasSemanaEmpleado(a.empId, DEMO_TODAY);
           const sobreLimite = horasSemana > limiteSemanal;
           const chips = marcasDeRegistro(a).map(m=>`<span class="pill ${m.tipo==='Entrada'?'pill-green':'pill-gray'}" style="margin:1px 3px 1px 0;">${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}</span>`).join('');
+          const turno = turnoDeEmpleado(a.empId);
+          const objetivo = horasObjetivoTurno(turno);
+          const cerrada = jornadaCerrada(a);
+          const jornadaPill = !cerrada? '<span class="pill pill-gray">En curso</span>' : (horasHoy+0.05>=objetivo? '<span class="pill pill-green">Cumplida</span>' : `<span class="pill pill-amber">Incompleta (${objetivo.toFixed(1)}h)</span>`);
           return `<tr>
             <td>${personCell(a.empId)}</td>
+            <td style="font-size:12.5px; color:var(--muted);">${turno.nombre}<br>${horarioTextoTurno(turno)}</td>
             <td>${chips||'—'}</td>
             <td>${horasHoy? horasHoy.toFixed(1)+'h' : '—'}</td>
+            <td>${jornadaPill}</td>
             <td>${sobreLimite? `<span class="pill pill-red">${horasSemana.toFixed(1)}h / ${limiteSemanal}h</span>` : `${horasSemana.toFixed(1)}h / ${limiteSemanal}h`}</td>
             <td>${pillAsistencia(a.estado)}</td>
           </tr>`;
         }).join('')}
-        ${!marcHoy.length? `<tr><td colspan="5">${emptyState('Sin marcaciones','Aún no se registran marcaciones para hoy.')}</td></tr>`:''}
+        ${!marcHoy.length? `<tr><td colspan="7">${emptyState('Sin marcaciones','Aún no se registran marcaciones para hoy.')}</td></tr>`:''}
       </tbody></table></div>
     </div>
     <div class="card card-pad">
@@ -1879,14 +1390,18 @@ function renderAsistencia(){
         ${fueraHoy.map(l=>`<tr><td>${personCell(l.empId)}</td><td>${l.tipo}</td><td>${fmtDate(l.fin)}</td></tr>`).join('')}
       </tbody></table></div>` : emptyState('Equipo completo','Nadie tiene permisos o vacaciones activas hoy.')}
       <h2 style="font-size:14px; margin:18px 0 10px;">Turnos configurados</h2>
-      <div class="table-wrap"><table><thead><tr><th>Turno</th><th>Horario</th><th>Días</th><th></th></tr></thead><tbody>
+      <p class="hint" style="margin:-6px 0 12px;">Define si cada turno es de jornada continua o partida (mañana/tarde con descanso) para calcular automáticamente llegadas tarde y salidas anticipadas.</p>
+      <div class="table-wrap"><table><thead><tr><th>Turno</th><th>Tipo</th><th>Horario</th><th>Horas/día</th><th>Tolerancia</th><th>Días</th><th></th></tr></thead><tbody>
         ${DB.shifts.map(s=>`<tr>
-          <td style="cursor:pointer;" onclick="abrirTurno('${s.id}')">${s.nombre}</td>
-          <td style="cursor:pointer;" onclick="abrirTurno('${s.id}')">${formatoHorario(s.horario)}</td>
-          <td style="cursor:pointer;" onclick="abrirTurno('${s.id}')">${s.dias}</td>
-          <td><button class="icon-btn" onclick="eliminarTurno('${s.id}')">🗑️</button></td>
+          <td>${s.nombre}</td>
+          <td>${s.tipo==='partido'? 'Partida' : 'Continua'}</td>
+          <td>${horarioTextoTurno(s)}</td>
+          <td>${horasObjetivoTurno(s).toFixed(1)}h</td>
+          <td>${s.toleranciaMin} min</td>
+          <td>${s.dias}</td>
+          <td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" onclick="abrirTurno('${s.id}')">Editar</button> <button class="btn btn-ghost btn-sm" onclick="borrarTurno('${s.id}')">🗑️</button></td>
         </tr>`).join('')}
-        ${!DB.shifts.length? `<tr><td colspan="4">${emptyState('Sin turnos','Crea un turno para poder asignárselo a varios colaboradores.')}</td></tr>`:''}
+        ${!DB.shifts.length? `<tr><td colspan="7">${emptyState('Sin turnos','Crea el primer turno para asignarlo a los colaboradores.')}</td></tr>`:''}
       </tbody></table></div>
       <button class="btn btn-ghost btn-sm" style="margin-top:10px;" onclick="abrirTurno()">+ Nuevo turno</button>
     </div>
@@ -1905,6 +1420,7 @@ function renderAsistencia(){
 function pillAsistencia(estado){
   if(estado==='A tiempo') return '<span class="pill pill-green">A tiempo</span>';
   if(estado==='Tarde') return '<span class="pill pill-amber">Tarde</span>';
+  if(estado==='Salida anticipada') return '<span class="pill pill-violet">Salida anticipada</span>';
   return '<span class="pill pill-red">Ausente</span>';
 }
 function pillPermiso(estado){
@@ -1929,97 +1445,76 @@ function registrarMarcacion(){
   if(!rec.marcas) rec.marcas = marcasDeRegistro(rec);
   rec.marcas.push({hora:horaSim, tipo});
   rec.metodo = 'Manual';
-  if(tipo==='Entrada'){
-    if(!rec.entrada) rec.entrada=horaSim;
-    const numEntrada = rec.marcas.filter(m=>m.tipo==='Entrada').length;
-    const evalR = evaluarEntrada(emp(empId), horaSim, numEntrada);
-    const esTarde = evalR!==null ? evalR==='Tarde' : (horaSim > '08:05'); // sin horario definido: se usa el umbral por defecto
-    if(esTarde) rec.estado = 'Tarde';
-  }
-  else { rec.salida=horaSim; }
+  if(tipo==='Entrada' && !rec.entrada){ rec.entrada=horaSim; }
+  else if(tipo==='Salida'){ rec.salida=horaSim; }
+  recalcularEstadoRegistro(rec);
   rec.horasDia = Math.round(horasDeRegistro(rec).horas*100)/100;
   sbRegistrarMarcacion(rec);
   const e = emp(empId); if(e) verificarAlertaHoras(e);
   closeModal(); toast('Marcación registrada'); renderApp();
 }
-/* ---------------------------------------------------------
-   TURNOS: editor de horario continuo o segmentado (con bloques
-   dinámicos, ej. mañana + tarde con descanso al almuerzo).
-   Reutiliza el mismo patrón que la creación de encuestas: un
-   estado temporal (state.turnoTemp) que se re-renderiza en el
-   mismo modal cada vez que cambia algo.
-   --------------------------------------------------------- */
+/* Muestra u oculta los campos de bloque horario según si el turno es
+   continuo (un bloque) o partido (bloque de mañana + bloque de tarde). */
+function alternarTipoTurno(){
+  const partido = $('#tn_tipo').value==='partido';
+  const elP = $('#tn_bloques_partido'), elC = $('#tn_bloques_continuo');
+  if(elP) elP.style.display = partido? '' : 'none';
+  if(elC) elC.style.display = partido? 'none' : '';
+}
 function abrirTurno(id){
   const t = id? DB.shifts.find(s=>s.id===id) : null;
-  const h = t? (t.horario||{}) : {};
-  state.turnoTemp = {
-    id: t? t.id : null,
-    nombre: t? t.nombre : '',
-    dias: t? t.dias : 'Lun–Vie',
-    tipo: h.tipo || 'continuo',
-    inicio: h.inicio || '08:00',
-    fin: h.fin || '17:00',
-    bloques: (h.bloques && h.bloques.length)? h.bloques.map(b=>({...b})) : [{inicio:'08:00',fin:'12:00'},{inicio:'14:00',fin:'17:00'}],
-    toleranciaMin: h.toleranciaMin!=null? h.toleranciaMin : 5,
-  };
-  renderModalTurno();
-}
-function renderModalTurno(){
-  const t = state.turnoTemp;
-  const horasDia = horasEsperadasHorario(t.tipo==='segmentado'? {tipo:'segmentado', bloques:t.bloques} : {tipo:'continuo', inicio:t.inicio, fin:t.fin});
+  const tipo = t? t.tipo : 'continuo';
+  const b = t? t.bloques : [{inicio:'08:00', fin:'17:00'}];
+  const bMan = (t&&t.tipo==='partido')? b : [{inicio:'08:00', fin:'12:00'},{inicio:'14:00', fin:'17:00'}];
+  const bCon = (t&&t.tipo==='continuo')? b[0] : {inicio:'08:00', fin:'17:00'};
   const body = `
-    <div class="field"><label>Nombre del turno</label><input value="${t.nombre}" oninput="state.turnoTemp.nombre=this.value" placeholder="Ej. Turno tarde"></div>
-    <div class="field"><label>Días</label><input value="${t.dias}" oninput="state.turnoTemp.dias=this.value"></div>
-    <div class="field"><label>Tipo de jornada</label>
-      <select onchange="state.turnoTemp.tipo=this.value; renderModalTurno();">
-        <option value="continuo" ${t.tipo==='continuo'?'selected':''}>Continua (sin descanso registrado)</option>
-        <option value="segmentado" ${t.tipo==='segmentado'?'selected':''}>Segmentada (ej. mañana y tarde, con descanso)</option>
-      </select>
+    <div class="field"><label>Nombre del turno</label><input id="tn_nombre" placeholder="Ej. Turno tarde" value="${t?t.nombre:''}"></div>
+    <div class="field"><label>Tipo de jornada</label><select id="tn_tipo" onchange="alternarTipoTurno()">
+      <option value="continuo" ${tipo==='continuo'?'selected':''}>Continua (un solo bloque, ej. 8:00 a 17:00)</option>
+      <option value="partido" ${tipo==='partido'?'selected':''}>Partida (mañana y tarde con descanso)</option>
+    </select></div>
+    <div id="tn_bloques_continuo" style="${tipo==='partido'?'display:none;':''}">
+      <div class="field-row"><div class="field"><label>Hora inicio</label><input type="time" id="tn_inicio" value="${bCon.inicio}"></div>
+        <div class="field"><label>Hora fin</label><input type="time" id="tn_fin" value="${bCon.fin}"></div></div>
     </div>
-    ${t.tipo==='continuo'? `
-    <div class="field-row">
-      <div class="field"><label>Hora de entrada</label><input type="time" value="${t.inicio}" onchange="state.turnoTemp.inicio=this.value; renderModalTurno();"></div>
-      <div class="field"><label>Hora de salida</label><input type="time" value="${t.fin}" onchange="state.turnoTemp.fin=this.value; renderModalTurno();"></div>
-    </div>` : `
-    ${t.bloques.map((b,i)=>`
-    <div class="field-row" style="align-items:flex-end;">
-      <div class="field"><label>${i===0?'Entrada mañana':i===1?'Entrada tarde (tras el descanso)':'Entrada bloque '+(i+1)}</label><input type="time" value="${b.inicio}" onchange="state.turnoTemp.bloques[${i}].inicio=this.value; renderModalTurno();"></div>
-      <div class="field"><label>${i===0?'Salida (inicio descanso)':'Salida'}</label><input type="time" value="${b.fin}" onchange="state.turnoTemp.bloques[${i}].fin=this.value; renderModalTurno();"></div>
-      ${t.bloques.length>1? `<button type="button" class="btn btn-ghost btn-sm" onclick="quitarBloqueTurno(${i})">🗑️</button>`:''}
-    </div>`).join('')}
-    <button type="button" class="btn btn-ghost btn-sm" onclick="agregarBloqueTurno()">+ Agregar otro bloque</button>
-    `}
-    <div class="field"><label>Tolerancia antes de marcar "Tarde" (minutos)</label><input type="number" min="0" value="${t.toleranciaMin}" onchange="state.turnoTemp.toleranciaMin=Number(this.value)||0"></div>
-    <p style="font-size:12px; color:var(--muted); margin-top:4px;">Jornada total: <strong>${horasDia.toFixed(1)}h/día</strong>. Un colaborador con este turno se marcará "Tarde" si llega después de la hora de entrada de cada bloque, más la tolerancia.</p>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarTurno()">Guardar turno</button>`;
-  openModal(t.id? 'Editar turno' : 'Nuevo turno', body, foot);
+    <div id="tn_bloques_partido" style="${tipo==='partido'?'':'display:none;'}">
+      <p class="hint" style="margin:0 0 6px;">Bloque de la mañana</p>
+      <div class="field-row"><div class="field"><label>Entrada mañana</label><input type="time" id="tn_m_inicio" value="${bMan[0].inicio}"></div>
+        <div class="field"><label>Salida a descanso</label><input type="time" id="tn_m_fin" value="${bMan[0].fin}"></div></div>
+      <p class="hint" style="margin:8px 0 6px;">Bloque de la tarde</p>
+      <div class="field-row"><div class="field"><label>Entrada tarde</label><input type="time" id="tn_t_inicio" value="${bMan[1].inicio}"></div>
+        <div class="field"><label>Salida final</label><input type="time" id="tn_t_fin" value="${bMan[1].fin}"></div></div>
+    </div>
+    <div class="field-row"><div class="field"><label>Tolerancia (minutos)</label><input type="number" min="0" id="tn_tolerancia" value="${t?t.toleranciaMin:5}"></div>
+      <div class="field"><label>Días</label><input id="tn_dias" value="${t?t.dias:'Lun–Vie'}"></div></div>
+    <p class="hint">Después de la tolerancia, una entrada más tarde de lo pactado se marca como <strong>Tarde</strong> y una salida antes de lo pactado como <strong>Salida anticipada</strong>.</p>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarTurno('${id||''}')">Guardar turno</button>`;
+  openModal(t? 'Editar turno' : 'Nuevo turno', body, foot);
 }
-function agregarBloqueTurno(){ state.turnoTemp.bloques.push({inicio:'14:00', fin:'17:00'}); renderModalTurno(); }
-function quitarBloqueTurno(i){ state.turnoTemp.bloques.splice(i,1); renderModalTurno(); }
-async function guardarTurno(){
-  const t = state.turnoTemp;
-  const nombre = t.nombre.trim(); if(!nombre){ toast('Escribe un nombre para el turno'); return; }
-  const horario = t.tipo==='segmentado'
-    ? {tipo:'segmentado', bloques:t.bloques.map(b=>({inicio:b.inicio, fin:b.fin})), toleranciaMin:t.toleranciaMin}
-    : {tipo:'continuo', inicio:t.inicio, fin:t.fin, toleranciaMin:t.toleranciaMin};
+async function guardarTurno(id){
+  const nombre=$('#tn_nombre').value.trim(); if(!nombre){ toast('Escribe un nombre para el turno'); return; }
+  const tipo = $('#tn_tipo').value;
+  const toleranciaMin = Number($('#tn_tolerancia').value)||0;
+  const dias = $('#tn_dias').value.trim();
+  let bloques;
+  if(tipo==='partido'){
+    bloques = [{inicio:$('#tn_m_inicio').value, fin:$('#tn_m_fin').value}, {inicio:$('#tn_t_inicio').value, fin:$('#tn_t_fin').value}];
+  } else {
+    bloques = [{inicio:$('#tn_inicio').value, fin:$('#tn_fin').value}];
+  }
   let turno;
-  if(t.id){ turno = DB.shifts.find(s=>s.id===t.id); Object.assign(turno, {nombre, dias:t.dias, horario}); }
-  else { turno = {id:uid('shift'), nombre, dias:t.dias, horario}; DB.shifts.push(turno); }
-  const res = await sbGuardarTurno(turno); const ok = res===true;
-  state.turnoTemp = null; closeModal();
-  toast(ok? 'Turno guardado' : '⚠️ El turno se guardó localmente, pero falló el guardado en la base de datos.'+(ok?'':' — '+res)); renderApp();
+  if(id){ turno = DB.shifts.find(s=>s.id===id); Object.assign(turno, {nombre, tipo, toleranciaMin, dias, bloques}); }
+  else { turno = {id:uid('shift'), nombre, tipo, toleranciaMin, dias, bloques}; DB.shifts.push(turno); }
+  const ok = await sbGuardarTurno(turno);
+  closeModal(); toast(ok? (id?'Turno actualizado':'Turno creado') : (id?'Turno actualizado en esta sesión':'Turno creado en esta sesión')); renderApp();
 }
-async function eliminarTurno(id){
-  const i = DB.shifts.findIndex(s=>s.id===id); if(i<0) return;
-  DB.shifts.splice(i,1);
-  /* A los colaboradores que tenían este turno asignado no se les borra su
-     ficha — solo se les quita la referencia, para que no quede un turnoId
-     "fantasma" apuntando a un turno que ya no existe. */
-  const afectados = DB.empleados.filter(e=>e.turnoId===id);
-  afectados.forEach(e=> e.turnoId=null);
-  await Promise.all(afectados.map(e=>sbGuardarEmpleado(e)));
-  const res = await sbBorrarTurno(id); const ok = res===true;
-  toast(ok? 'Turno eliminado' : '⚠️ Se eliminó localmente, pero falló el borrado en la base de datos.'+(ok?'':' — '+res)); renderApp();
+async function borrarTurno(id){
+  const enUso = DB.empleados.filter(e=>e.turnoId===id);
+  if(enUso.length && !confirm(`${enUso.length} colaborador(es) tienen este turno asignado. Al eliminarlo volverán al horario por defecto. ¿Continuar?`)) return;
+  DB.shifts = DB.shifts.filter(s=>s.id!==id);
+  enUso.forEach(e=> e.turnoId=null);
+  await sbBorrarTurno(id);
+  toast('Turno eliminado'); renderApp();
 }
 function abrirPermiso(){
   const activos = DB.empleados.filter(e=>e.estado==='Activo');
@@ -2047,770 +1542,188 @@ function resolverPermiso(id, estado){
     openModal('', `<div style="text-align:center; padding:10px 0;">
         <div style="width:64px; height:64px; border-radius:50%; background:var(--success); color:#fff; display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 14px;">✓</div>
         <h3 style="font-size:19px; margin-bottom:8px;">¡Vacaciones aprobadas!</h3>
-        <p style="color:var(--muted); font-size:13px;">${empNombre(l.empId)} descansará del ${fmtDate(l.inicio)} al ${fmtDate(l.fin)}. ¡Descansa y disfruta, nos vemos pronto!</p>
+        <p style="color:var(--muted); font-size:13px;">${emp(l.empId).nombre} descansará del ${fmtDate(l.inicio)} al ${fmtDate(l.fin)}. ¡Descansa y disfruta, nos vemos pronto!</p>
       </div>`, `<button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="closeModal(); renderApp();">Entendido</button>`);
   } else { toast(estado==='Aprobado'? 'Solicitud aprobada':'Solicitud rechazada'); renderApp(); }
 }
 
 /* =========================================================
-   5. DOCUMENTOS Y FIRMA
+   14. REPORTES — CÁLCULO DE HORAS LABORADAS Y EXPORTADORES
+   A partir de las marcaciones de entrada/salida de cada
+   colaborador (que admiten varios ciclos por día — ver
+   marcasDeRegistro/horasDeRegistro más arriba), esta sección
+   calcula las horas efectivamente laboradas por día, semana,
+   mes o año, y permite exportar el resultado a Excel (.xlsx)
+   o PDF, además de las plantillas CSV clásicas.
    ========================================================= */
-function renderDocumentos(){
-  const q = state.docSearch.toLowerCase();
-  const rows = DB.documents.filter(d=> d.nombre.toLowerCase().includes(q) || empNombre(d.empId).toLowerCase().includes(q));
-  return `
-  <div class="section-title">
-    <div class="field" style="margin:0; width:300px;"><input placeholder="Buscar documento o colaborador…" value="${state.docSearch}" oninput="state.docSearch=this.value; renderApp();"></div>
-    <button class="btn btn-primary" onclick="abrirDocumento()">+ Cargar documento</button>
-  </div>
-  <div class="table-wrap"><table><thead><tr><th>Documento</th><th>Colaborador</th><th>Tipo</th><th>Cargado</th><th>Estado</th><th></th></tr></thead><tbody>
-    ${rows.map(d=>`<tr>
-      <td>${d.nombre}</td><td>${personCell(d.empId)}</td><td>${d.tipo}</td><td>${fmtDate(d.fecha)}</td>
-      <td>${d.estado==='Firmado'? `<span class="pill pill-green">Firmado ${fmtDate(d.firmaFecha)}</span>` : '<span class="pill pill-amber">Pendiente</span>'}</td>
-      <td>${d.estado==='Pendiente'? `<button class="btn btn-primary btn-sm" onclick="abrirFirma('${d.id}')">Firmar</button>` : `<button class="btn btn-ghost btn-sm" onclick="verDocumentoFirmado('${d.id}')">Ver firma</button>`}</td>
-    </tr>`).join('')}
-    ${!rows.length? `<tr><td colspan="6">${emptyState('Sin documentos','No se encontraron documentos con ese criterio.')}</td></tr>`:''}
-  </tbody></table></div>`;
-}
-function abrirDocumento(){
-  const body = `
-    <div class="field"><label>Colaborador</label><select id="dc_emp">${DB.empleados.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</select></div>
-    <div class="field"><label>Nombre del documento</label><input id="dc_nombre" placeholder="Ej. Otrosí — cambio de cargo"></div>
-    <div class="field"><label>Tipo</label><select id="dc_tipo">${['Contrato','Otrosí','Certificación','Política','Comunicado','Otro'].map(o=>`<option>${o}</option>`).join('')}</select></div>
-    <p style="font-size:12.5px; color:var(--muted);">El archivo se digitaliza y queda disponible para firma electrónica desde cualquier lugar.</p>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarDocumento()">Cargar documento</button>`;
-  openModal('Cargar documento', body, foot);
-}
-async function guardarDocumento(){
-  const nombre = $('#dc_nombre').value.trim(); if(!nombre){ toast('Escribe el nombre del documento'); return; }
-  const nuevo = {id:uid('doc'), empId:$('#dc_emp').value, nombre, tipo:$('#dc_tipo').value, fecha:DEMO_TODAY, estado:'Pendiente', firmante:null, firmaFecha:null};
-  DB.documents.push(nuevo);
-  const res = await sbGuardarDocumento(nuevo); const ok = res===true;
-  closeModal(); toast(ok? 'Documento cargado' : '⚠️ El documento se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-function abrirFirma(docId){
-  const d = DB.documents.find(x=>x.id===docId);
-  const body = `
-    <p style="font-size:13px; margin-bottom:10px;"><strong>${d.nombre}</strong> · ${empNombre(d.empId)}</p>
-    <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:6px;">Firma con el mouse o el dedo en el recuadro</label>
-    <canvas id="sigCanvas" class="sigpad" width="500" height="160" style="width:100%; max-width:500px;"></canvas>
-    <div style="margin-top:8px;"><button class="btn btn-ghost btn-sm" onclick="limpiarFirma()">Limpiar</button></div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="confirmarFirma('${docId}')">Confirmar firma</button>`;
-  openModal('Firma electrónica', body, foot);
-  setTimeout(initSigPad, 30);
-}
-let sigCtx=null, sigDrawing=false, sigHasStroke=false;
-function initSigPad(){
-  const c = $('#sigCanvas'); if(!c) return;
-  sigCtx = c.getContext('2d'); sigCtx.lineWidth=2; sigCtx.lineCap='round'; sigCtx.strokeStyle='#1E3A75'; sigHasStroke=false;
-  const pos = ev=>{ const r=c.getBoundingClientRect(); const p = ev.touches? ev.touches[0]:ev;
-    return {x:(p.clientX-r.left)*(c.width/r.width), y:(p.clientY-r.top)*(c.height/r.height)}; };
-  const start = ev=>{ sigDrawing=true; sigHasStroke=true; const p=pos(ev); sigCtx.beginPath(); sigCtx.moveTo(p.x,p.y); ev.preventDefault(); };
-  const move = ev=>{ if(!sigDrawing) return; const p=pos(ev); sigCtx.lineTo(p.x,p.y); sigCtx.stroke(); ev.preventDefault(); };
-  const end = ()=>{ sigDrawing=false; };
-  c.onmousedown=start; c.onmousemove=move; window.addEventListener('mouseup', end);
-  c.ontouchstart=start; c.ontouchmove=move; c.ontouchend=end;
-}
-function limpiarFirma(){ const c=$('#sigCanvas'); sigCtx.clearRect(0,0,c.width,c.height); sigHasStroke=false; }
-async function confirmarFirma(docId){
-  if(!sigHasStroke){ toast('Dibuja tu firma antes de confirmar'); return; }
-  const d = DB.documents.find(x=>x.id===docId);
-  d.estado='Firmado'; d.firmante=empNombre(d.empId); d.firmaFecha=DEMO_TODAY;
-  const res = await sbGuardarDocumento(d); const ok = res===true;
-  closeModal(); toast(ok? 'Documento firmado electrónicamente' : '⚠️ La firma se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-function verDocumentoFirmado(docId){
-  const d = DB.documents.find(x=>x.id===docId);
-  openModal('Documento firmado', `
-    <p><strong>${d.nombre}</strong></p>
-    <p style="margin-top:6px; color:var(--muted); font-size:13px;">Firmado por ${d.firmante} el ${fmtDate(d.firmaFecha)}.</p>
-    <div style="margin-top:14px; border:1px solid var(--line); border-radius:8px; padding:16px; background:#FAFBFD; font-family:'Plus Jakarta Sans',sans-serif; font-style:italic; font-size:22px; color:var(--primary);">${d.firmante}</div>
-  `, `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`);
-}
+const PLANTILLAS = ['Colaboradores','Asistencia','Vacaciones'];
 
-/* =========================================================
-   6. CANAL DE DENUNCIAS
-   ========================================================= */
-function pillEstadoDenuncia(estado){
-  if(estado==='Nuevo') return '<span class="pill pill-amber">Nuevo</span>';
-  if(estado==='En investigación') return '<span class="pill pill-blue">En investigación</span>';
-  return '<span class="pill pill-gray">Cerrado</span>';
+function inicioMesISO(fechaISO){ return fechaISO.slice(0,7)+'-01'; }
+function finMesISO(fechaISO){ const d=new Date(fechaISO.slice(0,7)+'-01T00:00:00'); d.setMonth(d.getMonth()+1); d.setDate(0); return d.toISOString().slice(0,10); }
+function inicioAnioISO(fechaISO){ return fechaISO.slice(0,4)+'-01-01'; }
+function finAnioISO(fechaISO){ return fechaISO.slice(0,4)+'-12-31'; }
+function rangoPeriodo(periodo, fechaRef){
+  if(periodo==='dia') return {ini:fechaRef, fin:fechaRef};
+  if(periodo==='semana'){ const ini=inicioSemanaISO(fechaRef); return {ini, fin:finSemanaISO(ini)}; }
+  if(periodo==='mes') return {ini:inicioMesISO(fechaRef), fin:finMesISO(fechaRef)};
+  return {ini:inicioAnioISO(fechaRef), fin:finAnioISO(fechaRef)}; // 'anio'
 }
-function pillPrioridad(p){
-  if(p==='Alta') return '<span class="pill pill-red">Alta</span>';
-  if(p==='Media') return '<span class="pill pill-amber">Media</span>';
-  return '<span class="pill pill-gray">Baja</span>';
+function etiquetaPeriodo(periodo, fechaRef){
+  const {ini,fin} = rangoPeriodo(periodo, fechaRef);
+  if(periodo==='dia') return fmtDate(fechaRef);
+  if(periodo==='anio') return 'Año '+fechaRef.slice(0,4);
+  return `${fmtDate(ini)} – ${fmtDate(fin)}`;
 }
-function renderDenuncias(){
-  return `
-  <div class="tabs">
-    <button class="${state.complaintTab==='nueva'?'active':''}" onclick="state.complaintTab='nueva'; renderApp();">Nueva denuncia</button>
-    <button class="${state.complaintTab==='gestion'?'active':''}" onclick="state.complaintTab='gestion'; state.complaintSel=null; renderApp();">Gestión (${DB.complaints.length})</button>
-  </div>
-  ${state.complaintTab==='nueva'? renderNuevaDenuncia() : renderGestionDenuncias()}
-  `;
+function registrosEnRango(empId, ini, fin){
+  return DB.attendance.filter(a=>a.empId===empId && a.fecha>=ini && a.fecha<=fin).slice().sort((a,b)=>a.fecha.localeCompare(b.fecha));
 }
-function renderNuevaDenuncia(){
-  return `
-  <div class="card card-pad" style="max-width:640px;">
-    <p style="font-size:12.5px; color:var(--muted); margin-bottom:16px;">Este canal es confidencial y está disponible para colaboradores, clientes, proveedores y cualquier persona relacionada con la empresa. Puedes reportar de forma anónima.</p>
-    <div class="check-row"><input type="checkbox" id="dn_anon" checked onchange="$('#dn_datos').style.display=this.checked?'none':'block'"> <label for="dn_anon">Deseo mantener mi identidad reservada</label></div>
-    <div id="dn_datos" style="display:none;">
-      <div class="field-row"><div class="field"><label>Nombre</label><input id="dn_nombre"></div><div class="field"><label>Correo de contacto</label><input id="dn_email"></div></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label>¿Cuál es tu relación con la empresa?</label><select id="dn_relacion">${['Colaborador','Cliente','Proveedor','Otro'].map(o=>`<option>${o}</option>`).join('')}</select></div>
-      <div class="field"><label>Categoría</label><select id="dn_categoria">${['Acoso laboral','Discriminación','Fraude','Corrupción','Seguridad y salud en el trabajo','Conflicto de interés','Otro'].map(o=>`<option>${o}</option>`).join('')}</select></div>
-    </div>
-    <div class="field"><label>Descripción de los hechos</label><textarea id="dn_desc" placeholder="Cuéntanos qué ocurrió, cuándo y quiénes estuvieron involucrados…" style="min-height:110px;"></textarea></div>
-    <button class="btn btn-primary" onclick="enviarDenuncia()">Enviar denuncia</button>
-  </div>`;
+function tablaHorasPorPeriodo(){
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  const {ini,fin} = rangoPeriodo(periodo, fecha);
+  const base = state.reportEmpFiltro==='todos'? DB.empleados.filter(e=>e.estado==='Activo') : DB.empleados.filter(e=>e.id===state.reportEmpFiltro);
+  return base.map(e=>{
+    const regs = registrosEnRango(e.id, ini, fin);
+    const horas = regs.reduce((s,a)=> s + horasDeRegistro(a).horas, 0);
+    const dias = regs.filter(a=> horasDeRegistro(a).horas>0).length;
+    return { emp:e, horas, dias, regs };
+  }).sort((a,b)=> a.emp.nombre.localeCompare(b.emp.nombre));
 }
-async function enviarDenuncia(){
-  const desc = $('#dn_desc').value.trim(); if(!desc){ toast('Describe los hechos antes de enviar'); return; }
-  const anon = $('#dn_anon').checked;
-  const folio = 'DEN-2026-'+String(DB.seq.cpl).padStart(4,'0'); DB.seq.cpl++;
-  const nueva = {id:uid('cpl'), folio, fecha:DEMO_TODAY, categoria:$('#dn_categoria').value, relacion:$('#dn_relacion').value,
-    anonimo:anon, nombre:anon?null:$('#dn_nombre').value.trim(), email:anon?null:$('#dn_email').value.trim(),
-    descripcion:desc, estado:'Nuevo', prioridad:'Media', comentarios:[]};
-  DB.complaints.push(nueva);
-  const res = await sbGuardarDenuncia(nueva); const ok = res===true;
-  const avisoFalla = ok? '' : `<p style="margin-top:8px; color:var(--danger); font-size:12px;">⚠️ No se pudo guardar en la base de datos, quedó solo en este dispositivo. (${res})</p>`;
-  openModal('Denuncia enviada', `<p>Tu reporte fue recibido con el folio <strong>${folio}</strong>.</p><p style="margin-top:8px; color:var(--muted); font-size:13px;">Guarda este número para hacer seguimiento. El equipo de Talento Humano lo revisará de forma confidencial.</p>${avisoFalla}`, `<button class="btn btn-primary" onclick="closeModal(); state.complaintTab='gestion'; renderApp();">Entendido</button>`);
-}
-function renderGestionDenuncias(){
-  const sel = state.complaintSel && DB.complaints.find(c=>c.id===state.complaintSel);
-  return `
-  <div class="grid" style="grid-template-columns:1.1fr 1fr; gap:16px; align-items:start;">
-    <div class="table-wrap"><table><thead><tr><th>Folio</th><th>Categoría</th><th>Origen</th><th>Prioridad</th><th>Estado</th></tr></thead><tbody>
-      ${[...DB.complaints].reverse().map(c=>`<tr style="cursor:pointer; ${sel&&sel.id===c.id?'background:#FAFBFD;':''}" onclick="state.complaintSel='${c.id}'; renderApp();">
-        <td>${c.folio}</td><td>${c.categoria}</td><td>${c.anonimo? 'Anónimo':(c.nombre||'—')} · ${c.relacion}</td><td>${pillPrioridad(c.prioridad)}</td><td>${pillEstadoDenuncia(c.estado)}</td>
-      </tr>`).join('')}
-    </tbody></table></div>
-    <div class="card card-pad">
-      ${sel? `
-        <div style="display:flex; justify-content:space-between; align-items:baseline;"><h2 style="font-size:15px;">${sel.folio}</h2>${pillEstadoDenuncia(sel.estado)}</div>
-        <p style="font-size:11.5px; color:var(--muted); margin:4px 0 12px;">${fmtDate(sel.fecha)} · ${sel.categoria} · ${sel.anonimo?'Reporte anónimo':sel.nombre}</p>
-        <p style="font-size:13px; margin-bottom:16px;">${sel.descripcion}</p>
-        <div class="field-row">
-          <div class="field"><label>Estado</label><select onchange="cambiarEstadoDenuncia('${sel.id}', this.value)">${['Nuevo','En investigación','Cerrado'].map(o=>`<option ${sel.estado===o?'selected':''}>${o}</option>`).join('')}</select></div>
-          <div class="field"><label>Prioridad</label><select onchange="cambiarPrioridadDenuncia('${sel.id}', this.value)">${['Alta','Media','Baja'].map(o=>`<option ${sel.prioridad===o?'selected':''}>${o}</option>`).join('')}</select></div>
-        </div>
-        <h3 style="font-size:13px; margin:10px 0 8px;">Seguimiento</h3>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;">
-          ${sel.comentarios.map(c=>`<div style="border-left:2px solid var(--line); padding-left:10px;"><div style="font-size:12px; font-weight:600;">${c.autor}</div><div style="font-size:11px; color:var(--muted);">${fmtDate(c.fecha)}</div><div style="font-size:13px; margin-top:2px;">${c.texto}</div></div>`).join('') || '<p style="font-size:12.5px; color:var(--muted);">Sin comentarios de seguimiento aún.</p>'}
-        </div>
-        <div class="field"><textarea id="dn_comment" placeholder="Añadir nota de seguimiento…" style="min-height:60px;"></textarea></div>
-        <button class="btn btn-ghost btn-sm" onclick="agregarComentarioDenuncia('${sel.id}')">Agregar nota</button>
-      ` : emptyState('Selecciona una denuncia','Elige un caso de la lista para ver el detalle y darle seguimiento.')}
-    </div>
-  </div>`;
-}
-async function cambiarEstadoDenuncia(id, v){
-  const c = DB.complaints.find(c=>c.id===id); c.estado=v; renderApp();
-  const res = await sbGuardarDenuncia(c); const ok = res===true;
-  toast(ok? 'Estado actualizado' : '⚠️ Se actualizó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res));
-}
-async function cambiarPrioridadDenuncia(id, v){
-  const c = DB.complaints.find(c=>c.id===id); c.prioridad=v; renderApp();
-  const res = await sbGuardarDenuncia(c); const ok = res===true;
-  toast(ok? 'Prioridad actualizada' : '⚠️ Se actualizó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res));
-}
-async function agregarComentarioDenuncia(id){
-  const txt = $('#dn_comment').value.trim(); if(!txt) return;
-  const c = DB.complaints.find(c=>c.id===id);
-  c.comentarios.push({fecha:DEMO_TODAY, autor:'Daniela Fernández (RRHH)', texto:txt});
-  const res = await sbGuardarDenuncia(c); const ok = res===true;
-  toast(ok? 'Nota agregada' : '⚠️ La nota se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-
-/* =========================================================
-   7. COMUNICACIÓN MULTICANAL
-   ========================================================= */
-function allThreads(){
-  return [...DB.comm.gmail.map(t=>({...t,canal:'gmail'})), ...DB.comm.outlook.map(t=>({...t,canal:'outlook'})), ...DB.comm.whatsapp.map(t=>({...t,canal:'whatsapp'}))]
-    .sort((a,b)=> new Date(b.fecha)-new Date(a.fecha));
-}
-function canalLabel(c){ return {gmail:'Gmail', outlook:'Outlook', whatsapp:'WhatsApp'}[c]; }
-function renderComunicacion(){
-  const threads = state.commTab==='todos'? allThreads() : allThreads().filter(t=>t.canal===state.commTab);
-  const activeThread = state.commThreadId ? allThreads().find(t=>t.id===state.commThreadId) : threads[0];
-  if(activeThread && !state.commThreadId) state.commThreadId = activeThread.id;
-  return `
-  <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
-    <span class="acct-chip"><span class="ok"></span>Gmail conectado</span>
-    <span class="acct-chip"><span class="ok"></span>Outlook conectado</span>
-    <span class="acct-chip"><span class="ok"></span>WhatsApp Business conectado</span>
-    <button class="btn btn-ghost btn-sm" onclick="toast('Esto abriría el flujo de conexión de una nueva cuenta.')">+ Conectar canal</button>
-  </div>
-  <div class="chips">
-    ${['todos','gmail','outlook','whatsapp'].map(c=>`<div class="chip ${state.commTab===c?'active':''}" onclick="state.commTab='${c}'; state.commThreadId=null; renderApp();">${c==='todos'?'Todos':canalLabel(c)}</div>`).join('')}
-  </div>
-  <div class="comm-layout">
-    <div class="comm-list">
-      ${threads.map(t=>`<div class="comm-item ${activeThread&&activeThread.id===t.id?'active':''}" onclick="abrirHilo('${t.id}')">
-        <div class="top"><span class="nm">${t.contacto}${!t.leido?'<span class=\"unread\"></span>':''}</span><span class="ch">${canalLabel(t.canal)}</span></div>
-        <div class="snip">${t.asunto}</div>
-      </div>`).join('') || emptyState('Sin conversaciones','No hay mensajes en este canal.')}
-    </div>
-    <div class="comm-thread">
-      ${activeThread? `
-        <div class="comm-thread-head"><div><strong>${activeThread.contacto}</strong><div style="font-size:11.5px; color:var(--muted);">${activeThread.asunto} · ${canalLabel(activeThread.canal)}</div></div></div>
-        <div class="comm-msgs" id="commMsgs">
-          ${activeThread.mensajes.map(m=>`<div class="msg ${m.de==='ellos'?'them':'us'}">${m.texto}<span class="hora">${m.hora}</span></div>`).join('')}
-        </div>
-        <div class="comm-reply"><textarea id="commReply" placeholder="Escribe una respuesta…"></textarea><button class="btn btn-primary" onclick="responderHilo('${activeThread.id}')">Enviar</button></div>
-      ` : `<div style="padding:40px;">${emptyState('Sin conversación seleccionada','Elige un mensaje de la lista.')}</div>`}
-    </div>
-  </div>`;
-}
-function findThreadById(id){
-  for(const canal of ['gmail','outlook','whatsapp']){ const t = DB.comm[canal].find(x=>x.id===id); if(t) return {t,canal}; }
-  return null;
-}
-function abrirHilo(id){ const f=findThreadById(id); if(f) f.t.leido=true; state.commThreadId=id; renderApp(); }
-function responderHilo(id){
-  const f = findThreadById(id); if(!f) return;
-  const txt = $('#commReply').value.trim(); if(!txt) return;
-  const hora = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
-  f.t.mensajes.push({de:'nosotros', texto:txt, hora}); f.t.fecha = new Date().toISOString();
-  renderApp(); toast('Mensaje enviado');
-}
-function scrollMsgsToBottom(){ const box=$('#commMsgs'); if(box) box.scrollTop = box.scrollHeight; }
-
-/* =========================================================
-   8. ACTIVOS
-   ========================================================= */
-function renderActivos(){
-  const estados = ['Todos','Disponible','Asignado','Mantenimiento','Baja'];
-  const cats = ['Todas','Tangible','Intangible'];
-  let rows = DB.assets;
-  if(state.assetFilterEstado!=='Todos') rows = rows.filter(a=>a.estado===state.assetFilterEstado);
-  if(state.assetFilterCat!=='Todas') rows = rows.filter(a=>a.categoria===state.assetFilterCat);
-  return `
-  <div class="section-title">
-    <div class="chips" style="margin:0;">${estados.map(s=>`<div class="chip ${state.assetFilterEstado===s?'active':''}" onclick="state.assetFilterEstado='${s}'; renderApp();">${s}</div>`).join('')}</div>
-    <button class="btn btn-primary" onclick="abrirActivo()">+ Nuevo activo</button>
-  </div>
-  <div class="chips">${cats.map(s=>`<div class="chip ${state.assetFilterCat===s?'active':''}" onclick="state.assetFilterCat='${s}'; renderApp();">${s}</div>`).join('')}</div>
-  <div class="table-wrap"><table><thead><tr><th>Activo</th><th>Categoría</th><th>Tipo</th><th>Identificador</th><th class="num-cell">Valor</th><th>Estado</th><th>Asignado a</th><th></th></tr></thead><tbody>
-    ${rows.map(a=>`<tr>
-      <td>${a.nombre}</td><td>${a.categoria}</td><td>${a.tipo}</td><td>${a.identificador}</td><td class="num-cell">${fmtCOP(a.valor)}</td>
-      <td>${pillActivo(a.estado)}</td>
-      <td>${a.asignadoA? empNombre(a.asignadoA) : '—'}</td>
-      <td>${a.estado==='Asignado'? `<button class="btn btn-ghost btn-sm" onclick="liberarActivo('${a.id}')">Liberar</button>` : `<button class="btn btn-ghost btn-sm" onclick="asignarActivo('${a.id}')">Asignar</button>`}</td>
-    </tr>`).join('')}
-    ${!rows.length? `<tr><td colspan="8">${emptyState('Sin activos','Ningún activo coincide con el filtro seleccionado.')}</td></tr>`:''}
-  </tbody></table></div>`;
-}
-function pillActivo(e){
-  if(e==='Disponible') return '<span class="pill pill-green">Disponible</span>';
-  if(e==='Asignado') return '<span class="pill pill-blue">Asignado</span>';
-  if(e==='Mantenimiento') return '<span class="pill pill-amber">Mantenimiento</span>';
-  return '<span class="pill pill-red">Baja</span>';
-}
-function abrirActivo(){
-  const body = `
-    <div class="field"><label>Nombre del activo</label><input id="as_nombre" placeholder="Ej. Portátil Lenovo ThinkPad"></div>
-    <div class="field-row"><div class="field"><label>Categoría</label><select id="as_cat">${['Tangible','Intangible'].map(o=>`<option>${o}</option>`).join('')}</select></div>
-      <div class="field"><label>Tipo</label><input id="as_tipo" placeholder="Ej. Equipo de cómputo"></div></div>
-    <div class="field-row"><div class="field"><label>Identificador / serial</label><input id="as_id"></div>
-      <div class="field"><label>Valor (COP)</label><input type="number" id="as_valor" value="0"></div></div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarActivo()">Guardar</button>`;
-  openModal('Nuevo activo', body, foot);
-}
-async function guardarActivo(){
-  const nombre = $('#as_nombre').value.trim(); if(!nombre){ toast('Escribe el nombre del activo'); return; }
-  const nuevo = {id:uid('ast'), nombre, categoria:$('#as_cat').value, tipo:$('#as_tipo').value.trim()||'General', identificador:$('#as_id').value.trim()||'—', estado:'Disponible', asignadoA:null, fecha:null, valor:Number($('#as_valor').value)||0};
-  DB.assets.push(nuevo);
-  const res = await sbGuardarActivo(nuevo); const ok = res===true;
-  closeModal(); toast(ok? 'Activo agregado al inventario' : '⚠️ El activo se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-function asignarActivo(id){
-  const activos = DB.empleados.filter(e=>e.estado==='Activo');
-  const body = `<div class="field"><label>Asignar a</label><select id="ax_emp">${activos.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</select></div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="confirmarAsignacion('${id}')">Asignar</button>`;
-  openModal('Asignar activo', body, foot);
-}
-async function confirmarAsignacion(id){
-  const a = DB.assets.find(x=>x.id===id); a.estado='Asignado'; a.asignadoA=$('#ax_emp').value; a.fecha=DEMO_TODAY;
-  const res = await sbGuardarActivo(a); const ok = res===true;
-  closeModal(); toast(ok? 'Activo asignado' : '⚠️ Se asignó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-async function liberarActivo(id){
-  const a=DB.assets.find(x=>x.id===id); a.estado='Disponible'; a.asignadoA=null; a.fecha=null;
-  const res = await sbGuardarActivo(a); const ok = res===true;
-  toast(ok? 'Activo liberado' : '⚠️ Se liberó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-
-/* =========================================================
-   9. ENCUESTAS (gestión + autoservicio + clima)
-   ========================================================= */
-function renderEncuestas(){
-  return `
-  <div class="tabs">
-    <button class="${state.surveyTab==='gestion'?'active':''}" onclick="state.surveyTab='gestion'; renderApp();">Gestión</button>
-    <button class="${state.surveyTab==='mis'?'active':''}" onclick="state.surveyTab='mis'; renderApp();">Mis encuestas</button>
-  </div>
-  ${state.surveyTab==='gestion'? renderGestionEncuestas() : renderMisEncuestas()}`;
-}
-function renderGestionEncuestas(){
-  const activos = DB.empleados.filter(e=>e.estado==='Activo').length;
-  return `
-  <div class="section-title"><span></span>
-    <button class="btn btn-primary" onclick="abrirNuevaEncuesta()">+ Nueva encuesta</button>
-  </div>
-  <div class="grid grid-2">
-    ${DB.surveys.map(s=>{
-      const part = Math.round(s.respuestas.length/activos*100);
-      return `<div class="card card-pad">
-        <div style="display:flex; justify-content:space-between; align-items:baseline;"><h3 style="font-size:15px;">${s.titulo}</h3>${s.estado==='Activa'?'<span class="pill pill-green">Activa</span>':'<span class="pill pill-gray">Cerrada</span>'}</div>
-        <p style="font-size:12.5px; color:var(--muted); margin:6px 0 12px;">${s.descripcion}</p>
-        <p style="font-size:12px; color:var(--muted);">${s.preguntas.length} preguntas · ${s.respuestas.length} respuestas (${isFinite(part)?part:0}% participación)</p>
-        <div style="display:flex; gap:8px; margin-top:12px;">
-          <button class="btn btn-ghost btn-sm" onclick="verResultadosEncuesta('${s.id}')">Ver resultados</button>
-          ${s.estado==='Activa'? `<button class="btn btn-danger btn-sm" onclick="cerrarEncuesta('${s.id}')">Cerrar encuesta</button>`:''}
-        </div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-function renderMisEncuestas(){
+function usuarioReporte(){
   const you = emp(state.currentEmp);
-  return `
-  <div class="field" style="max-width:320px; margin-bottom:16px;"><label>Viendo encuestas de</label>
-    <select onchange="state.currentEmp=this.value; renderApp();">${DB.empleados.filter(e=>e.estado==='Activo').map(e=>`<option value="${e.id}" ${e.id===you.id?'selected':''}>${e.nombre}</option>`).join('')}</select>
-  </div>
-  <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>Fecha de inicio</th><th>Estado</th><th></th></tr></thead><tbody>
-    ${DB.surveys.map(s=>{
-      const respondida = s.respuestas.some(r=>r.empId===you.id);
-      const estado = respondida? 'Hecho' : (s.estado==='Activa'? 'Pendiente' : 'No respondida');
-      return `<tr><td>${s.titulo}</td><td>Clima</td><td>${fmtDate(s.creada)}</td>
-        <td>${estado==='Hecho'? '<span class="pill pill-blue">Hecho</span>' : estado==='Pendiente'? '<span class="pill pill-amber">Pendiente</span>' : '<span class="pill pill-gray">No respondida</span>'}</td>
-        <td>${!respondida && s.estado==='Activa'? `<button class="btn btn-primary btn-sm" onclick="renderModalResponder('${s.id}')">Responder</button>` : `<button class="btn btn-ghost btn-sm" onclick="verResultadosEncuesta('${s.id}')">Ver</button>`}</td>
-      </tr>`;
-    }).join('')}
-  </tbody></table></div>`;
-}
-function abrirNuevaEncuesta(){ state.surveyTemp = {titulo:'', descripcion:'', preguntas:[]}; renderModalNuevaEncuesta(); }
-function renderModalNuevaEncuesta(){
-  const t = state.surveyTemp;
-  const body = `
-    <div class="field"><label>Título</label><input id="sv_titulo" value="${t.titulo}" oninput="state.surveyTemp.titulo=this.value"></div>
-    <div class="field"><label>Descripción</label><textarea id="sv_desc" oninput="state.surveyTemp.descripcion=this.value">${t.descripcion}</textarea></div>
-    <h3 style="font-size:13px; margin:14px 0 8px;">Preguntas (${t.preguntas.length})</h3>
-    <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;">
-      ${t.preguntas.map((p,i)=>`<div style="display:flex; justify-content:space-between; align-items:center; border:1px solid var(--line); border-radius:7px; padding:7px 10px; font-size:12.5px;">
-        <span>${i+1}. ${p.texto} <em style="color:var(--muted);">(${p.tipo}${p.opciones?': '+p.opciones.join(', '):''})</em></span>
-        <button class="icon-btn" onclick="eliminarPreguntaTemp(${i})">✕</button>
-      </div>`).join('') || '<p style="font-size:12.5px; color:var(--muted);">Aún no has agregado preguntas.</p>'}
-    </div>
-    <div class="card-pad" style="border:1px dashed var(--line); border-radius:8px; padding:14px;">
-      <div class="field"><label>Texto de la pregunta</label><input id="qn_texto" placeholder="Ej. ¿Qué tan satisfecho estás con…?"></div>
-      <div class="field"><label>Tipo de respuesta</label><select id="qn_tipo" onchange="$('#qn_opciones_wrap').style.display=this.value==='opcion'?'block':'none'">
-        <option value="clima">Escala de clima (emojis)</option><option value="opcion">Opción múltiple</option><option value="abierta">Texto abierto</option></select></div>
-      <div class="field" id="qn_opciones_wrap" style="display:none;"><label>Opciones (separadas por coma)</label><input id="qn_opciones" placeholder="Opción 1, Opción 2, Opción 3"></div>
-      <button class="btn btn-ghost btn-sm" onclick="agregarPreguntaTemp()">+ Agregar pregunta</button>
-    </div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="crearEncuesta()">Crear encuesta</button>`;
-  openModal('Nueva encuesta', body, foot, true);
-}
-function agregarPreguntaTemp(){
-  const texto = $('#qn_texto').value.trim(); if(!texto){ toast('Escribe el texto de la pregunta'); return; }
-  const tipo = $('#qn_tipo').value;
-  const p = {id:'q'+(state.surveyTemp.preguntas.length+1), texto, tipo};
-  if(tipo==='opcion'){ p.opciones = $('#qn_opciones').value.split(',').map(s=>s.trim()).filter(Boolean); if(!p.opciones.length){ toast('Agrega al menos una opción'); return; } }
-  state.surveyTemp.preguntas.push(p);
-  renderModalNuevaEncuesta();
-}
-function eliminarPreguntaTemp(i){ state.surveyTemp.preguntas.splice(i,1); renderModalNuevaEncuesta(); }
-async function crearEncuesta(){
-  const t = state.surveyTemp;
-  if(!t.titulo.trim()){ toast('Escribe un título para la encuesta'); return; }
-  if(!t.preguntas.length){ toast('Agrega al menos una pregunta'); return; }
-  const nueva = {id:uid('svy'), titulo:t.titulo.trim(), descripcion:t.descripcion.trim(), estado:'Activa', creada:DEMO_TODAY, preguntas:t.preguntas, respuestas:[]};
-  DB.surveys.push(nueva);
-  const res = await sbGuardarEncuesta(nueva); const ok = res===true;
-  state.surveyTemp=null; closeModal(); toast(ok? 'Encuesta creada' : '⚠️ La encuesta se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-async function cerrarEncuesta(id){
-  const s = DB.surveys.find(s=>s.id===id); s.estado='Cerrada'; renderApp();
-  const res = await sbGuardarEncuesta(s); const ok = res===true;
-  toast(ok? 'Encuesta cerrada' : '⚠️ Se cerró localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res));
-}
-const CLIMA_OPCIONES = [['Siempre','😊'],['Casi siempre','🙂'],['A veces','😐'],['Casi nunca','🙁'],['Nunca','☹️']];
-function renderModalResponder(surveyId){
-  const s = DB.surveys.find(x=>x.id===surveyId);
-  const activos = DB.empleados.filter(e=>e.estado==='Activo');
-  const body = `
-    <div class="field"><label>Colaborador que responde</label><select id="rs_emp">${activos.map(e=>`<option value="${e.id}" ${e.id===state.currentEmp?'selected':''}>${e.nombre}</option>`).join('')}</select></div>
-    <div id="rs_preguntas">
-      ${s.preguntas.map(p=>`<div class="field"><label>${p.texto}</label>${renderInputPregunta(p)}</div>`).join('')}
-    </div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="enviarRespuesta('${s.id}')">Enviar respuesta</button>`;
-  openModal('Responder — '+s.titulo, body, foot, true);
-}
-function renderInputPregunta(p){
-  if(p.tipo==='clima'){
-    return `<div style="display:flex; gap:14px; flex-wrap:wrap;">${CLIMA_OPCIONES.map(([label,emoji])=>`
-      <label style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; font-size:11px; color:var(--muted);">
-        <input type="radio" name="rq_${p.id}" value="${label}" style="width:auto;"><span style="font-size:22px;">${emoji}</span>${label}
-      </label>`).join('')}</div>`;
-  }
-  if(p.tipo==='opcion') return `<select id="rq_${p.id}">${p.opciones.map(o=>`<option>${o}</option>`).join('')}</select>`;
-  return `<textarea id="rq_${p.id}" placeholder="Escribe tu respuesta…"></textarea>`;
-}
-async function enviarRespuesta(surveyId){
-  const s = DB.surveys.find(x=>x.id===surveyId);
-  const valores = {};
-  s.preguntas.forEach(p=>{
-    if(p.tipo==='clima'){ const checked=document.querySelector(`input[name="rq_${p.id}"]:checked`); valores[p.id]=checked?checked.value:''; }
-    else valores[p.id] = $('#rq_'+p.id).value;
-  });
-  s.respuestas.push({empId:$('#rs_emp').value, fecha:DEMO_TODAY, valores});
-  const res = await sbGuardarEncuesta(s); const ok = res===true;
-  closeModal(); toast(ok? 'Respuesta registrada' : '⚠️ La respuesta se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-function verResultadosEncuesta(surveyId){
-  const s = DB.surveys.find(x=>x.id===surveyId);
-  const body = s.preguntas.map(p=>{
-    if(p.tipo==='abierta'){
-      const respuestas = s.respuestas.map(r=>r.valores[p.id]).filter(Boolean);
-      return `<div style="margin-bottom:16px;"><h4 style="font-size:13px; margin-bottom:8px;">${p.texto}</h4>
-        ${respuestas.length? respuestas.map(t=>`<p style="font-size:12.5px; border-left:2px solid var(--line); padding-left:9px; margin-bottom:6px;">${t}</p>`).join('') : '<p style="font-size:12.5px; color:var(--muted);">Sin respuestas aún.</p>'}</div>`;
-    }
-    const opciones = p.tipo==='clima'? CLIMA_OPCIONES.map(o=>o[0]) : p.opciones;
-    const counts = opciones.map(o=> s.respuestas.filter(r=>r.valores[p.id]===o).length);
-    const max = Math.max(1,...counts);
-    return `<div style="margin-bottom:16px;"><h4 style="font-size:13px; margin-bottom:8px;">${p.texto}</h4>
-      ${opciones.map((o,i)=>`<div class="bar-row"><div class="bl"><span>${o}</span><span>${counts[i]}</span></div><div class="bar-track"><div class="bar-fill" style="width:${counts[i]/max*100}%;"></div></div></div>`).join('')}
-    </div>`;
-  }).join('');
-  openModal(`Resultados — ${s.titulo}`, body || emptyState('Sin datos','Esta encuesta todavía no tiene preguntas.'), `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`, true);
+  return you? you.nombre : (DB.empleados[0]? DB.empleados[0].nombre : 'Administrador');
 }
 
-/* =========================================================
-   10. OBJETIVOS
-   ========================================================= */
-function renderObjetivos(){
-  const you = state.objEmp;
-  const objs = DB.objectives.filter(o=>o.empId===you);
-  const orgs = objs.filter(o=>o.tipo==='Organizacional');
-  const pers = objs.filter(o=>o.tipo==='Personal');
-  const pesoAvg = list=> list.length? Math.round(list.reduce((s,o)=>s+o.peso*o.avance,0)/list.reduce((s,o)=>s+o.peso,0)||0) : 0;
-  const acumulado = pesoAvg(objs);
-  const tablaObjetivos = list => !list.length? emptyState('Sin objetivos','No hay objetivos registrados en esta categoría.') : `
-    <div class="table-wrap"><table><thead><tr><th>Descripción</th><th>Meta</th><th class="num-cell">Peso</th><th class="num-cell">Avance</th><th>Fecha término</th><th>Activo</th><th>Aprobado</th><th>Creado por</th><th></th></tr></thead><tbody>
-    ${list.map(o=>`<tr>
-      <td>${o.descripcion}</td><td>${o.meta}</td><td class="num-cell">${o.peso}%</td>
-      <td class="num-cell"><input type="number" min="0" max="100" class="tbl-input" value="${o.avance}" onchange="actualizarAvanceObjetivo('${o.id}',this.value)">%</td>
-      <td>${fmtDate(o.fechaTermino)}</td>
-      <td>${o.activo? '✅':'—'}</td><td>${o.aprobado? '✅ '+fmtDate(o.fechaAprobacion):'Pendiente'}</td>
-      <td>${o.creadoPor}</td>
-      <td><button class="icon-btn" onclick="eliminarObjetivo('${o.id}')">🗑️</button></td>
-    </tr>`).join('')}
-    </tbody></table></div>`;
-  return `
-  <div class="section-title">
-    <div class="field" style="margin:0; width:280px;"><select onchange="state.objEmp=this.value; renderApp();">
-      ${DB.empleados.filter(e=>e.estado==='Activo').map(e=>`<option value="${e.id}" ${e.id===you?'selected':''}>${e.nombre}</option>`).join('')}
-    </select></div>
-    <button class="btn btn-primary" onclick="abrirObjetivo()">+ Nuevo objetivo</button>
-  </div>
-  <div class="card card-pad" style="margin-bottom:16px;">
-    <div class="bar-row"><div class="bl"><strong>Progreso acumulado</strong><span>${acumulado}%</span></div><div class="bar-track"><div class="bar-fill amber" style="width:${acumulado}%;"></div></div></div>
-  </div>
-  <div class="card card-pad" style="margin-bottom:16px;">
-    <h3 style="font-size:14px; margin-bottom:10px;">Organizacionales</h3>
-    <div class="bar-row"><div class="bl"><span></span><span>${pesoAvg(orgs)}%</span></div><div class="bar-track"><div class="bar-fill green" style="width:${pesoAvg(orgs)}%;"></div></div></div>
-    ${tablaObjetivos(orgs)}
-  </div>
-  <div class="card card-pad">
-    <h3 style="font-size:14px; margin-bottom:10px;">Personales</h3>
-    <div class="bar-row"><div class="bl"><span></span><span>${pesoAvg(pers)}%</span></div><div class="bar-track"><div class="bar-fill amber" style="width:${pesoAvg(pers)}%;"></div></div></div>
-    ${tablaObjetivos(pers)}
-  </div>`;
-}
-async function actualizarAvanceObjetivo(id, v){
-  const o = DB.objectives.find(x=>x.id===id); o.avance = Math.max(0,Math.min(100,Number(v)||0)); renderApp();
-  const res = await sbGuardarObjetivo(o); const ok = res===true;
-  if(!ok) toast('⚠️ El avance se guardó localmente, pero falló el guardado en la base de datos.'+' — '+res);
-}
-async function eliminarObjetivo(id){
-  const i = DB.objectives.findIndex(x=>x.id===id); if(i<0) return;
-  DB.objectives.splice(i,1);
-  const res = await sbBorrarObjetivo(id); const ok = res===true;
-  toast(ok? 'Objetivo eliminado' : '⚠️ Se eliminó localmente, pero falló el borrado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-function abrirObjetivo(){
-  const body = `
-    <div class="field"><label>Tipo</label><select id="ob_tipo">${['Organizacional','Personal'].map(o=>`<option>${o}</option>`).join('')}</select></div>
-    <div class="field"><label>Descripción</label><input id="ob_desc" placeholder="Ej. Reducir tiempos de respuesta a solicitudes"></div>
-    <div class="field-row"><div class="field"><label>Meta</label><input id="ob_meta" placeholder="Ej. 90%"></div>
-      <div class="field"><label>Peso (%)</label><input type="number" id="ob_peso" value="50"></div></div>
-    <div class="field"><label>Fecha de término</label><input type="date" id="ob_fecha" value="2026-12-31"></div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarObjetivo()">Guardar</button>`;
-  openModal('Nuevo objetivo', body, foot);
-}
-async function guardarObjetivo(){
-  const descripcion = $('#ob_desc').value.trim(); if(!descripcion){ toast('Describe el objetivo'); return; }
-  const nuevo = {id:uid('obj'), empId:state.objEmp, tipo:$('#ob_tipo').value, descripcion, meta:$('#ob_meta').value.trim()||'—',
-    peso:Number($('#ob_peso').value)||0, avance:0, fechaTermino:$('#ob_fecha').value, activo:true, aprobado:false, fechaAprobacion:null, creadoPor:'Daniela Fernández Ospina'};
-  DB.objectives.push(nuevo);
-  const res = await sbGuardarObjetivo(nuevo); const ok = res===true;
-  closeModal(); toast(ok? 'Objetivo creado' : '⚠️ El objetivo se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-
-/* =========================================================
-   11. RECONOCIMIENTOS
-   ========================================================= */
-const RECOG_TIPOS = [['Innovación','info'],['Trabajo en equipo','green'],['Vamos más lejos','amber'],['Compromiso','blue']];
-function renderReconocimientos(){
-  const mesActual = DB.recognitions.filter(r=>r.fecha.slice(0,7)==='2026-09');
-  const subareas = new Set(mesActual.map(r=>{ const e=emp(r.para); return e? e.area : null; }).filter(Boolean)).size;
-  const filtro = state.recogFiltro;
-  const list = (filtro==='Todas'? DB.recognitions : DB.recognitions.filter(r=>r.categoria===filtro)).slice().reverse();
-  const colorMap = {info:'linear-gradient(135deg,#0EA5E9,#0369A1)', green:'linear-gradient(135deg,#16A34A,#166534)', amber:'linear-gradient(135deg,#F5A623,#C97F0A)', blue:'linear-gradient(135deg,#2F56B0,#1E3A75)'};
-  return `
-  <div class="card card-pad" style="margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
-    <div style="display:flex; gap:36px;">
-      <div><div style="font-family:'Plus Jakarta Sans'; font-size:26px; font-weight:800; color:var(--primary);">${mesActual.length}</div><div style="font-size:12px; color:var(--muted);">Reconocimientos del mes</div></div>
-      <div><div style="font-family:'Plus Jakarta Sans'; font-size:26px; font-weight:800; color:var(--primary);">${subareas}</div><div style="font-size:12px; color:var(--muted);">Sub-áreas distintas</div></div>
-    </div>
-    <button class="btn btn-primary" onclick="abrirReconocer()">⭐ Reconocer</button>
-  </div>
-  <div class="chips">${['Todas',...RECOG_TIPOS.map(t=>t[0])].map(c=>`<div class="chip ${filtro===c?'active':''}" onclick="state.recogFiltro='${c}'; renderApp();">${c}</div>`).join('')}</div>
-  <div class="grid grid-3">
-    ${list.map(r=>`<div class="recog-card">
-      <div class="recog-head" style="background:${colorMap[r.color]};">${r.categoria}</div>
-      <div class="recog-body">
-        <div class="recog-title">¡Buen trabajo ${empNombre(r.para).split(' ')[0]}!</div>
-        <div class="recog-msg">${r.mensaje}</div>
-        ${r.comentarios.map(c=>`<div class="recog-msg">${empNombre(c.de).split(' ')[0]}: ${c.texto}</div>`).join('')}
-        <div style="font-size:11px; color:var(--muted); margin-top:6px;">De ${empNombre(r.de)} · ${fmtDate(r.fecha)}</div>
-      </div>
-      <div class="recog-foot">
-        <span onclick="likeReconocimiento('${r.id}')">👍 ${r.likes}</span>
-        <span onclick="comentarReconocimiento('${r.id}')">💬 ${r.comentarios.length}</span>
-      </div>
-    </div>`).join('') || `<div style="grid-column:1/-1;">${emptyState('Sin reconocimientos','Aún no hay reconocimientos en esta categoría.')}</div>`}
-  </div>`;
-}
-async function likeReconocimiento(id){
-  const r = DB.recognitions.find(r=>r.id===id); r.likes++; renderApp();
-  const res = await sbGuardarReconocimiento(r); const ok = res===true;
-  if(!ok) toast('⚠️ El like se guardó localmente, pero falló el guardado en la base de datos.'+' — '+res);
-}
-function comentarReconocimiento(id){
-  const body = `<div class="field"><label>Tu comentario</label><textarea id="rc_texto" placeholder="Escribe un comentario…"></textarea></div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarComentarioReconocimiento('${id}')">Comentar</button>`;
-  openModal('Añadir comentario', body, foot);
-}
-async function guardarComentarioReconocimiento(id){
-  const txt = $('#rc_texto').value.trim(); if(!txt) return;
-  const r = DB.recognitions.find(r=>r.id===id);
-  r.comentarios.push({de:state.currentEmp, texto:txt});
-  const res = await sbGuardarReconocimiento(r); const ok = res===true;
-  closeModal(); toast(ok? 'Comentario agregado' : '⚠️ El comentario se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-function abrirReconocer(){
-  const activos = DB.empleados.filter(e=>e.estado==='Activo');
-  const body = `
-    <div class="field"><label>Categoría</label><select id="rg_cat">${RECOG_TIPOS.map(([n])=>`<option>${n}</option>`).join('')}</select></div>
-    <div class="field"><label>¿A quién reconoces?</label><select id="rg_para">${activos.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('')}</select></div>
-    <div class="field"><label>Mensaje</label><textarea id="rg_msg" placeholder="Cuéntale a todos por qué se lo merece…"></textarea></div>`;
-  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="enviarReconocimiento()">Reconocer</button>`;
-  openModal('Nuevo reconocimiento', body, foot);
-}
-async function enviarReconocimiento(){
-  const msg = $('#rg_msg').value.trim(); if(!msg){ toast('Escribe un mensaje'); return; }
-  const cat = $('#rg_cat').value; const color = RECOG_TIPOS.find(t=>t[0]===cat)[1];
-  const nuevo = {id:uid('rec'), categoria:cat, color, de:state.currentEmp, para:$('#rg_para').value, mensaje:msg, fecha:DEMO_TODAY, likes:0, comentarios:[]};
-  DB.recognitions.push(nuevo);
-  const res = await sbGuardarReconocimiento(nuevo); const ok = res===true;
-  closeModal(); toast(ok? 'Reconocimiento publicado' : '⚠️ El reconocimiento se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-
-/* =========================================================
-   12. BENEFICIOS
-   ========================================================= */
-function renderBeneficios(){
-  const you = emp(state.currentEmp);
-  const cats = ['Todas','Fitness','Salud','Conocimiento','Seguros','Restaurantes','Otros'];
-  const filtro = state.benefFiltro || 'Todas';
-  const list = filtro==='Todas'? DB.benefits : DB.benefits.filter(b=>b.categoria===filtro);
-  const colors = ['linear-gradient(135deg,#2F56B0,#1E3A75)','linear-gradient(135deg,#F5A623,#C97F0A)','linear-gradient(135deg,#16A34A,#166534)','linear-gradient(135deg,#0EA5E9,#0369A1)','linear-gradient(135deg,#7C5CD6,#4C3699)'];
-  const misSolicitudes = DB.benefitRequests.filter(b=>b.empId===you.id);
-  return `
-  <div class="field" style="max-width:320px; margin-bottom:14px;"><label>Viendo beneficios de</label>
-    <select onchange="state.currentEmp=this.value; renderApp();">${DB.empleados.filter(e=>e.estado==='Activo').map(e=>`<option value="${e.id}" ${e.id===you.id?'selected':''}>${e.nombre}</option>`).join('')}</select>
-  </div>
-  <div class="section-title"><div class="points-badge">⭐ Tienes ${you.puntos} puntos disponibles</div></div>
-  <div class="chips">${cats.map(c=>`<div class="chip ${filtro===c?'active':''}" onclick="state.benefFiltro='${c}'; renderApp();">${c}</div>`).join('')}</div>
-  <div class="grid grid-3" style="margin-bottom:24px;">
-    ${list.map((b,i)=>`<div class="benefit-card" style="background:${colors[i%colors.length]};">
-      <div class="pts">⭐ ${b.puntos} pts</div>
-      <div class="emoji">${b.emoji}</div>
-      <h4>${b.nombre}</h4><p>${b.descripcion}</p>
-      <button onclick="solicitarBeneficio('${b.id}')">Solicitar</button>
-    </div>`).join('') || `<div style="grid-column:1/-1;">${emptyState('Sin beneficios','No hay beneficios en esta categoría.')}</div>`}
-  </div>
-  <h3 style="font-size:14px; margin-bottom:10px;">Mis solicitudes</h3>
-  <div class="table-wrap"><table><thead><tr><th>Beneficio</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>
-    ${misSolicitudes.map(b=>`<tr><td>${DB.benefits.find(x=>x.id===b.beneficioId).nombre}</td><td>${fmtDate(b.fecha)}</td><td>${b.estado==='Aprobado'?'<span class="pill pill-green">Aprobado</span>':b.estado==='Rechazado'?'<span class="pill pill-red">Rechazado</span>':'<span class="pill pill-amber">Pendiente</span>'}</td></tr>`).join('')}
-    ${!misSolicitudes.length? `<tr><td colspan="3">${emptyState('Sin solicitudes','Aún no has solicitado beneficios.')}</td></tr>`:''}
-  </tbody></table></div>`;
-}
-async function solicitarBeneficio(benId){
-  const you = emp(state.currentEmp); const b = DB.benefits.find(x=>x.id===benId);
-  if(you.puntos < b.puntos){ toast('No tienes puntos suficientes para este beneficio'); return; }
-  const nueva = {id:uid('br'), empId:you.id, beneficioId:benId, fecha:DEMO_TODAY, estado:'Pendiente'};
-  DB.benefitRequests.push(nueva);
-  const res = await sbGuardarSolicitudBeneficio(nueva); const ok = res===true;
-  toast(ok? 'Solicitud enviada, queda pendiente de aprobación' : '⚠️ La solicitud se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-
-/* =========================================================
-   13. ADELANTOS DE SUELDO
-   ========================================================= */
-function topeAdelanto(empId){ const e=emp(empId); return Math.round(e.salario*0.3/1000)*1000; }
-function disponibleAdelanto(empId){
-  const tope = topeAdelanto(empId);
-  const retiradoMes = DB.advances.filter(a=>a.empId===empId && a.fecha.slice(0,7)===DEMO_TODAY.slice(0,7) && a.estado==='Pagado').reduce((s,a)=>s+a.monto,0);
-  return Math.max(0, tope-retiradoMes);
-}
-function renderAdelantos(){
-  const you = emp(state.currentEmp);
-  const disponible = disponibleAdelanto(you.id);
-  const historial = DB.advances.filter(a=>a.empId===you.id).slice().reverse();
-  return `
-  <div class="field" style="max-width:320px; margin-bottom:14px;"><label>Viendo adelantos de</label>
-    <select onchange="state.currentEmp=this.value; renderApp();">${DB.empleados.filter(e=>e.estado==='Activo').map(e=>`<option value="${e.id}" ${e.id===you.id?'selected':''}>${e.nombre}</option>`).join('')}</select>
-  </div>
-  <div class="card-bar">Adelantos de sueldo — ${you.nombre}</div>
-  <div class="card card-pad" style="border-radius:0 0 12px 12px; border-top:none;">
-    <div class="grid grid-2" style="margin-bottom:18px;">
-      <div class="card stat" style="border-left:3px solid var(--primary-2);"><div class="lbl">Disponible a retirar</div><div class="num">${fmtCOP(disponible)}</div><div class="sub">Tope mensual: ${fmtCOP(topeAdelanto(you.id))}</div></div>
-      <div>
-        <div class="field"><label>Monto a solicitar</label><input type="number" id="ad_monto" value="${Math.min(50000,disponible)}" step="1000" max="${disponible}"></div>
-        <button class="btn btn-primary" onclick="solicitarAdelanto('${you.id}')" ${disponible<=0?'disabled':''}>Retirar ahora</button>
-      </div>
-    </div>
-    <h3 style="font-size:13px; margin-bottom:10px;">Historial de retiros</h3>
-    <div class="table-wrap"><table><thead><tr><th>Fecha de solicitud</th><th class="num-cell">Monto</th><th>Estado</th></tr></thead><tbody>
-      ${historial.map(a=>`<tr><td>${fmtDate(a.fecha)}</td><td class="num-cell">${fmtCOP(a.monto)}</td><td><span class="pill pill-green">${a.estado}</span></td></tr>`).join('')}
-      ${!historial.length? `<tr><td colspan="3">${emptyState('Sin retiros','Este colaborador aún no ha solicitado adelantos.')}</td></tr>`:''}
-    </tbody></table></div>
-  </div>`;
-}
-async function solicitarAdelanto(empId){
-  const monto = Number($('#ad_monto').value)||0;
-  const disponible = disponibleAdelanto(empId);
-  if(monto<=0){ toast('Ingresa un monto válido'); return; }
-  if(monto>disponible){ toast('El monto supera lo disponible para retirar'); return; }
-  const nuevo = {id:uid('adv'), empId, fecha:DEMO_TODAY, monto, estado:'Pagado'};
-  DB.advances.push(nuevo);
-  const res = await sbGuardarAdelanto(nuevo); const ok = res===true;
-  toast(ok? 'Adelanto pagado correctamente' : '⚠️ El adelanto se guardó localmente, pero falló el guardado en la base de datos.'+(ok? '' : ' — '+res)); renderApp();
-}
-
-/* =========================================================
-   14. REPORTES / EXPORTADORES
-   ========================================================= */
-const PLANTILLAS = ['Nómina','Colaboradores','Asistencia','Vacaciones','Firma de documentos','Beneficios','Reconocimientos','Objetivos','Activos','Encuestas','Denuncias'];
 function renderReportes(){
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  const filas = tablaHorasPorPeriodo();
+  const totalHoras = filas.reduce((s,f)=>s+f.horas,0);
   return `
+  <div class="card card-pad" style="margin-bottom:18px;">
+    <div class="section-title"><h2>Cálculo de horas laboradas</h2><span class="hint">Calculado a partir de las entradas y salidas — admite varios ciclos por día</span></div>
+    <div class="field-row" style="align-items:flex-end; flex-wrap:wrap;">
+      <div class="field" style="max-width:190px;">
+        <label>Calcular por</label>
+        <select onchange="state.reportPeriodo=this.value; renderApp();">
+          ${[['dia','Día'],['semana','Semana'],['mes','Mes'],['anio','Año']].map(([v,l])=>`<option value="${v}" ${periodo===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" style="max-width:190px;">
+        <label>Fecha de referencia</label>
+        <input type="date" value="${fecha}" onchange="state.reportFecha=this.value; renderApp();">
+      </div>
+      <div class="field" style="max-width:240px;">
+        <label>Colaborador</label>
+        <select onchange="state.reportEmpFiltro=this.value; renderApp();">
+          <option value="todos" ${state.reportEmpFiltro==='todos'?'selected':''}>Todos los colaboradores</option>
+          ${DB.empleados.map(e=>`<option value="${e.id}" ${state.reportEmpFiltro===e.id?'selected':''}>${e.nombre}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field" style="flex:0 0 auto; margin-bottom:13px;">
+        <button class="btn btn-accent" onclick="exportarHorasExcel()">📊 Exportar Excel</button>
+      </div>
+      <div class="field" style="flex:0 0 auto; margin-bottom:13px;">
+        <button class="btn btn-primary" onclick="exportarHorasPDF()">📄 Exportar PDF</button>
+      </div>
+    </div>
+    <p class="hint" style="margin:-4px 0 14px;">Período: <strong>${etiquetaPeriodo(periodo, fecha)}</strong> · Total horas laboradas: <strong>${totalHoras.toFixed(1)}h</strong></p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Colaborador</th><th>Área</th><th class="num-cell">Días con marcación</th><th class="num-cell">Horas laboradas</th><th></th></tr></thead>
+      <tbody>
+        ${filas.map(f=>`<tr>
+          <td>${personCell(f.emp.id)}</td>
+          <td>${f.emp.area}</td>
+          <td class="num-cell">${f.dias}</td>
+          <td class="num-cell"><strong>${f.horas.toFixed(1)}h</strong></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="verHorasDetalle('${f.emp.id}')">Ver detalle</button></td>
+        </tr>`).join('')}
+        ${!filas.length? `<tr><td colspan="5">${emptyState('Sin datos','No hay colaboradores o marcaciones para este período.')}</td></tr>`:''}
+      </tbody>
+    </table></div>
+  </div>
+
   <div class="grid" style="grid-template-columns:1fr 260px; gap:18px; align-items:start;">
     <div>
       <div class="section-title"><h2>Exportadores generados</h2><span class="hint">${DB.reports.length} reportes</span></div>
       <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>Usuario</th><th>Fecha de creación</th><th></th></tr></thead><tbody>
         ${[...DB.reports].reverse().map(r=>`<tr><td>${r.nombre}</td><td><span class="pill pill-blue">${r.tipo}</span></td><td>${r.usuario}</td><td>${fmtDateTime(r.fecha)}</td><td><button class="icon-btn" onclick="eliminarReporte('${r.id}')">🗑️</button></td></tr>`).join('')}
-        ${!DB.reports.length? `<tr><td colspan="5">${emptyState('Sin reportes','Genera tu primer reporte desde las plantillas.')}</td></tr>`:''}
+        ${!DB.reports.length? `<tr><td colspan="5">${emptyState('Sin reportes','Genera tu primer reporte desde el cálculo de horas o las plantillas.')}</td></tr>`:''}
       </tbody></table></div>
     </div>
     <div class="card card-pad">
-      <h3 style="font-size:13px; margin-bottom:10px;">Plantillas</h3>
+      <h3 style="font-size:13px; margin-bottom:10px;">Plantillas CSV</h3>
       <div style="display:flex; flex-direction:column; gap:7px;">
         ${PLANTILLAS.map(p=>`<button class="btn btn-ghost" style="justify-content:flex-start;" onclick="generarPlantilla('${p}')">${p}</button>`).join('')}
       </div>
     </div>
   </div>`;
 }
+
+function verHorasDetalle(empId){
+  const e = emp(empId);
+  const {ini,fin} = rangoPeriodo(state.reportPeriodo, state.reportFecha);
+  const regs = registrosEnRango(empId, ini, fin);
+  const total = regs.reduce((s,a)=>s+horasDeRegistro(a).horas,0);
+  const body = `
+    <p class="hint" style="margin-bottom:12px;">Período: ${etiquetaPeriodo(state.reportPeriodo, state.reportFecha)}</p>
+    <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Marcaciones</th><th class="num-cell">Horas</th></tr></thead><tbody>
+      ${regs.map(a=>`<tr><td>${fmtDate(a.fecha)}</td><td>${marcasDeRegistro(a).map(m=>`${m.tipo==='Entrada'?'Ingreso':'Salida'} ${m.hora}`).join(' · ')||'—'}</td><td class="num-cell">${horasDeRegistro(a).horas.toFixed(1)}h</td></tr>`).join('')}
+      ${!regs.length? `<tr><td colspan="3">${emptyState('Sin marcaciones','No hay registros en este período.')}</td></tr>`:''}
+    </tbody></table></div>
+    <p style="margin-top:12px; font-weight:700;">Total: ${total.toFixed(1)}h</p>`;
+  const foot = `<button class="btn btn-ghost" onclick="closeModal()">Cerrar</button>`;
+  openModal('Detalle de horas — '+e.nombre, body, foot, true);
+}
+
+/* ---- Exportación a Excel (.xlsx) y PDF de las horas laboradas ---- */
+function exportarHorasExcel(){
+  const filas = tablaHorasPorPeriodo();
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  if(!filas.length){ toast('No hay datos para exportar en este período'); return; }
+  if(!window.XLSX){ toast('No se pudo cargar el módulo de Excel, intenta de nuevo'); return; }
+  const data = filas.map(f=>({ 'Colaborador':f.emp.nombre, 'Cédula':f.emp.cedula, 'Área':f.emp.area,
+    'Cargo':f.emp.cargo, 'Días con marcación':f.dias, 'Horas laboradas':Math.round(f.horas*100)/100 }));
+  const ws = XLSX.utils.json_to_sheet(data);
+  ws['!cols'] = [{wch:26},{wch:16},{wch:18},{wch:20},{wch:16},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Horas laboradas');
+  XLSX.writeFile(wb, `horas_${periodo}_${fecha}.xlsx`);
+  DB.reports.push({id:uid('rep'), nombre:'Horas laboradas ('+etiquetaPeriodo(periodo,fecha)+')', tipo:'Excel', usuario:usuarioReporte(), fecha:new Date().toISOString()});
+  toast('Excel descargado'); if(state.view==='reportes') renderApp();
+}
+function exportarHorasPDF(){
+  const filas = tablaHorasPorPeriodo();
+  const periodo = state.reportPeriodo, fecha = state.reportFecha;
+  if(!filas.length){ toast('No hay datos para exportar en este período'); return; }
+  const JsPDFCtor = window.jspdf && window.jspdf.jsPDF;
+  if(!JsPDFCtor){ toast('No se pudo cargar el módulo de PDF, intenta de nuevo'); return; }
+  const doc = new JsPDFCtor({ orientation:'portrait', unit:'pt' });
+  doc.setFontSize(14); doc.setTextColor(30,58,117);
+  doc.text(CFG.companyName||'Bitácora', 40, 42);
+  doc.setFontSize(11); doc.setTextColor(90,90,90);
+  doc.text('Horas laboradas — '+etiquetaPeriodo(periodo,fecha), 40, 60);
+  const total = filas.reduce((s,f)=>s+f.horas,0);
+  doc.text('Total del período: '+total.toFixed(1)+' h', 40, 76);
+  doc.autoTable({
+    startY: 92,
+    head: [['Colaborador','Cédula','Área','Días con marcación','Horas laboradas']],
+    body: filas.map(f=>[f.emp.nombre, f.emp.cedula, f.emp.area, String(f.dias), f.horas.toFixed(1)+'h']),
+    headStyles:{ fillColor:[30,58,117] }, styles:{ fontSize:9 },
+  });
+  doc.save(`horas_${periodo}_${fecha}.pdf`);
+  DB.reports.push({id:uid('rep'), nombre:'Horas laboradas ('+etiquetaPeriodo(periodo,fecha)+')', tipo:'PDF', usuario:usuarioReporte(), fecha:new Date().toISOString()});
+  toast('PDF descargado'); if(state.view==='reportes') renderApp();
+}
+
 function eliminarReporte(id){ const i=DB.reports.findIndex(r=>r.id===id); if(i>-1) DB.reports.splice(i,1); renderApp(); }
 function generarPlantilla(tipo){
   let headers=[], rows=[];
-  if(tipo==='Nómina'){ const run=runActivo(); if(run){ headers=['Colaborador','Cédula','Días','Devengado','Deducciones','Neto']; rows=run.detalles.map(d=>[empNombre(d.empId), (emp(d.empId)||{}).cedula||'', d.dias, d.devengado, d.deducciones, d.neto]); } }
-  else if(tipo==='Colaboradores'){ headers=['Nombre','Cédula','Cargo','Área','Contrato','Salario','Estado']; rows=DB.empleados.map(e=>[e.nombre,e.cedula,e.cargo,e.area,e.contrato,e.salario,e.estado]); }
-  else if(tipo==='Asistencia'){ headers=['Colaborador','Fecha','Entrada','Salida','Estado']; rows=DB.attendance.map(a=>[empNombre(a.empId),a.fecha,a.entrada||'',a.salida||'',a.estado]); }
-  else if(tipo==='Vacaciones'){ headers=['Colaborador','Tipo','Inicio','Fin','Días','Estado']; rows=DB.leaveRequests.map(l=>[empNombre(l.empId),l.tipo,l.inicio,l.fin,l.dias,l.estado]); }
-  else if(tipo==='Firma de documentos'){ headers=['Documento','Colaborador','Tipo','Estado','Fecha firma']; rows=DB.documents.map(d=>[d.nombre,empNombre(d.empId),d.tipo,d.estado,d.firmaFecha||'']); }
-  else if(tipo==='Beneficios'){ headers=['Colaborador','Beneficio','Fecha','Estado']; rows=DB.benefitRequests.map(b=>[empNombre(b.empId),DB.benefits.find(x=>x.id===b.beneficioId).nombre,b.fecha,b.estado]); }
-  else if(tipo==='Reconocimientos'){ headers=['De','Para','Categoría','Fecha','Likes']; rows=DB.recognitions.map(r=>[empNombre(r.de),empNombre(r.para),r.categoria,r.fecha,r.likes]); }
-  else if(tipo==='Objetivos'){ headers=['Colaborador','Tipo','Descripción','Peso','Avance','Fecha término']; rows=DB.objectives.map(o=>[empNombre(o.empId),o.tipo,o.descripcion,o.peso,o.avance,o.fechaTermino]); }
-  else if(tipo==='Activos'){ headers=['Activo','Categoría','Tipo','Estado','Asignado a','Valor']; rows=DB.assets.map(a=>[a.nombre,a.categoria,a.tipo,a.estado,a.asignadoA?empNombre(a.asignadoA):'',a.valor]); }
-  else if(tipo==='Encuestas'){ headers=['Encuesta','Estado','Preguntas','Respuestas']; rows=DB.surveys.map(s=>[s.titulo,s.estado,s.preguntas.length,s.respuestas.length]); }
-  else if(tipo==='Denuncias'){ headers=['Folio','Categoría','Origen','Prioridad','Estado']; rows=DB.complaints.map(c=>[c.folio,c.categoria,c.anonimo?'Anónimo':c.relacion,c.prioridad,c.estado]); }
+  if(tipo==='Colaboradores'){ headers=['Nombre','Cédula','Cargo','Área','Contrato','Salario','Estado']; rows=DB.empleados.map(e=>[e.nombre,e.cedula,e.cargo,e.area,e.contrato,e.salario,e.estado]); }
+  else if(tipo==='Asistencia'){ headers=['Colaborador','Fecha','Marcaciones','Horas','Estado']; rows=DB.attendance.map(a=>[emp(a.empId)?emp(a.empId).nombre:'—', a.fecha, marcasDeRegistro(a).map(m=>`${m.tipo} ${m.hora}`).join(' | '), Math.round(horasDeRegistro(a).horas*100)/100, a.estado]); }
+  else if(tipo==='Vacaciones'){ headers=['Colaborador','Tipo','Inicio','Fin','Días','Estado']; rows=DB.leaveRequests.map(l=>[emp(l.empId)?emp(l.empId).nombre:'—', l.tipo, l.inicio, l.fin, l.dias, l.estado]); }
   const filename = tipo.toLowerCase().replace(/\s+/g,'_')+'_'+DEMO_TODAY+'.csv';
   exportCSV(filename, headers, rows);
-  DB.reports.push({id:uid('rep'), nombre:tipo+' — '+fmtDate(DEMO_TODAY), tipo:'Exportado', usuario: emp(state.currentEmp)? emp(state.currentEmp).nombre : 'Daniela Fernández', fecha:new Date().toISOString()});
+  DB.reports.push({id:uid('rep'), nombre:tipo+' — '+fmtDate(DEMO_TODAY), tipo:'Exportado', usuario:usuarioReporte(), fecha:new Date().toISOString()});
   toast('Reporte descargado'); if(state.view==='reportes') renderApp();
-}
-
-/* =========================================================
-   15. PARÁMETROS LEGALES
-   ========================================================= */
-function renderParametros(){
-  return `
-  <div class="card card-pad" style="max-width:640px;">
-    <p style="font-size:12.5px; color:var(--muted); margin-bottom:16px;">Estos valores alimentan el cálculo automático de nómina. Actualízalos cada vez que cambie el salario mínimo, el auxilio de transporte o los porcentajes de aportes, para mantener la liquidación en línea con la normativa vigente.</p>
-    <div class="field-row"><div class="field"><label>Salario mínimo mensual (COP)</label><input type="number" id="cf_smmlv" value="${CFG.smmlv}"></div>
-      <div class="field"><label>Auxilio de transporte (COP)</label><input type="number" id="cf_aux" value="${CFG.auxTransporte}"></div></div>
-    <div class="field-row"><div class="field"><label>Aporte a salud (%)</label><input type="number" id="cf_salud" value="${CFG.saludPct}"></div>
-      <div class="field"><label>Aporte a pensión (%)</label><input type="number" id="cf_pension" value="${CFG.pensionPct}"></div></div>
-    <div class="field-row"><div class="field"><label>Horas mensuales de referencia</label><input type="number" id="cf_horas" value="${CFG.horasMes}"></div>
-      <div class="field"><label>Jornada máxima semanal (h) — alarma de exceso</label><input type="number" step="0.5" id="cf_horas_semana" value="${CFG.horasSemanalesMax||42}"></div></div>
-    <p style="font-size:11.5px; color:var(--muted); margin:-6px 0 14px;">Ley 2101 de 2021: la jornada semanal máxima bajó a 42 horas desde el 16 de julio de 2026. Si cambia la norma o tu empresa pacta otra jornada, ajústala aquí.</p>
-    <h3 style="font-size:13px; margin:14px 0 8px;">Recargos de horas extra y festivos (%)</h3>
-    <div class="field-row"><div class="field"><label>Diurna</label><input type="number" id="cf_hed" value="${CFG.rHED}"></div>
-      <div class="field"><label>Nocturna</label><input type="number" id="cf_hen" value="${CFG.rHEN}"></div></div>
-    <div class="field-row"><div class="field"><label>Festiva diurna</label><input type="number" id="cf_hefd" value="${CFG.rHEFD}"></div>
-      <div class="field"><label>Festiva nocturna</label><input type="number" id="cf_hefn" value="${CFG.rHEFN}"></div></div>
-
-    <h3 style="font-size:13px; margin:18px 0 4px;">Prestaciones sociales y aportes patronales (%)</h3>
-    <p style="font-size:11.5px; color:var(--muted); margin-bottom:10px;">Fórmulas según el Código Sustantivo del Trabajo (arts. 186, 249, 306) y la Ley 50 de 1990 (art. 99). No aplican a contratos por prestación de servicios. Fuente: Ministerio del Trabajo.</p>
-    <div class="field-row"><div class="field"><label>Cesantías (mensual)</label><input type="number" step="0.01" id="cf_cesantias" value="${CFG.pctCesantias}"></div>
-      <div class="field"><label>Intereses de cesantías (anual)</label><input type="number" step="0.01" id="cf_intces" value="${CFG.pctIntCesantias}"></div></div>
-    <div class="field-row"><div class="field"><label>Prima de servicios (mensual)</label><input type="number" step="0.01" id="cf_prima" value="${CFG.pctPrima}"></div>
-      <div class="field"><label>Vacaciones (mensual)</label><input type="number" step="0.01" id="cf_vacaciones" value="${CFG.pctVacaciones}"></div></div>
-    <div class="field-row"><div class="field"><label>ARL (según clase de riesgo)</label><input type="number" step="0.001" id="cf_arl" value="${CFG.pctArl}"></div>
-      <div class="field"><label>Caja de compensación familiar</label><input type="number" step="0.01" id="cf_caja" value="${CFG.pctCaja}"></div></div>
-    <div class="field-row"><div class="field"><label>SENA</label><input type="number" step="0.01" id="cf_sena" value="${CFG.pctSena}"></div>
-      <div class="field"><label>ICBF</label><input type="number" step="0.01" id="cf_icbf" value="${CFG.pctIcbf}"></div></div>
-    <div class="field-row"><div class="field"><label>Salud a cargo del empleador</label><input type="number" step="0.01" id="cf_saludpat" value="${CFG.pctSaludPatronal}"></div>
-      <div class="field"><label>Pensión a cargo del empleador</label><input type="number" step="0.01" id="cf_pensionpat" value="${CFG.pctPensionPatronal}"></div></div>
-    <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted); margin:6px 0 16px;">
-      <input type="checkbox" id="cf_exon" ${CFG.exoneracion?'checked':''} style="width:auto;">
-      Aplica exoneración de aportes a salud, SENA e ICBF (Ley 1607 de 2012, art. 25 — para colaboradores con salario inferior a 10 SMMLV)
-    </label>
-
-    <button class="btn btn-primary" onclick="guardarParametros()">Guardar parámetros</button>
-  </div>`;
-}
-function guardarParametros(){
-  CFG = { ...CFG, smmlv:Number($('#cf_smmlv').value)||CFG.smmlv, auxTransporte:Number($('#cf_aux').value)||0,
-    saludPct:Number($('#cf_salud').value)||0, pensionPct:Number($('#cf_pension').value)||0, horasMes:Number($('#cf_horas').value)||230,
-    horasSemanalesMax:Number($('#cf_horas_semana').value)||42,
-    rHED:Number($('#cf_hed').value)||0, rHEN:Number($('#cf_hen').value)||0, rHEFD:Number($('#cf_hefd').value)||0, rHEFN:Number($('#cf_hefn').value)||0,
-    pctCesantias:Number($('#cf_cesantias').value)||0, pctIntCesantias:Number($('#cf_intces').value)||0,
-    pctPrima:Number($('#cf_prima').value)||0, pctVacaciones:Number($('#cf_vacaciones').value)||0,
-    pctArl:Number($('#cf_arl').value)||0, pctCaja:Number($('#cf_caja').value)||0,
-    pctSena:Number($('#cf_sena').value)||0, pctIcbf:Number($('#cf_icbf').value)||0,
-    pctSaludPatronal:Number($('#cf_saludpat').value)||0, pctPensionPatronal:Number($('#cf_pensionpat').value)||0,
-    exoneracion: $('#cf_exon').checked };
-  DB.payrollRuns.forEach(run=>{ if(run.estado!=='Cerrada') run.detalles.forEach(d=>{ const e=emp(d.empId); if(e) calcularDetalle(d, e); }); });
-  sbGuardarParametros(CFG);
-  verificarTodasLasAlertasHoras();
-  toast('Parámetros actualizados'); renderApp();
 }
 
 /* =========================================================
@@ -3018,17 +1931,15 @@ function kioscoRegistrarMarcacion(e, metodo){
   rec.marcas.push({hora, tipo});
   rec.metodo = metodo;
   if(tipo==='Entrada'){
-    if(!rec.entrada) rec.entrada = hora;
-    const numEntrada = rec.marcas.filter(m=>m.tipo==='Entrada').length;
-    const evalR = evaluarEntrada(e, hora, numEntrada);
-    const esTarde = evalR!==null ? evalR==='Tarde' : (hora > '08:05'); // sin horario definido: se usa el umbral por defecto
-    if(esTarde) rec.estado = 'Tarde';
+    if(!rec.entrada){ rec.entrada = hora; }
   } else {
     rec.salida = hora; // guarda la última salida del día para compatibilidad
   }
+  const estadoMarca = recalcularEstadoRegistro(rec);
   rec.horasDia = Math.round(horasDeRegistro(rec).horas*100)/100;
   sbRegistrarMarcacion(rec);
-  kioscoSetStatus('ok', `${tipo} registrada — ${e.nombre} (${hora}) · ${rec.horasDia}h trabajadas hoy`);
+  const aviso = estadoMarca==='Tarde'? ' ⚠️ Llegada tarde' : (estadoMarca==='Salida anticipada'? ' ⚠️ Salida anticipada' : '');
+  kioscoSetStatus('ok', `${tipo} registrada — ${e.nombre} (${hora}) · ${rec.horasDia}h trabajadas hoy${aviso}`);
   verificarAlertaHoras(e);
   return tipo;
 }
@@ -3155,7 +2066,6 @@ function irSegunHash(){
 }
 async function initApp(){
   await cargarDesdeSupabase();
-  DB.payrollRuns.forEach(run=> run.detalles.forEach(d=>{ const e=emp(d.empId); if(e) calcularDetalle(d, e); }));
   /* sincroniza el estado de navegación con los datos reales ya cargados,
      por si los IDs por defecto ya no existen (o todavía no hay ninguno) */
   if(!DB.empleados.find(e=>e.id===state.currentEmp)) state.currentEmp = DB.empleados[0]? DB.empleados[0].id : null;
